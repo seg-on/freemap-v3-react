@@ -6,7 +6,7 @@ import MenuItem from 'react-bootstrap/lib/MenuItem';
 import Button from 'react-bootstrap/lib/Button';
 import Overlay from 'react-bootstrap/lib/Overlay';
 import Popover from 'react-bootstrap/lib/Popover';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { baseLayers, overlayLayers } from 'fm3/mapDefinitions';
 import * as FmPropTypes from 'fm3/propTypes';
 import { mapRefocus } from 'fm3/actions/mapActions';
@@ -68,7 +68,7 @@ class MapSwitchButton extends React.Component {
     return (
       <>
         <Button ref={this.setButton} onClick={this.handleButtonClick} title={t('mapLayers.layers')}>
-          <FontAwesomeIcon icon="map-o" />
+          <FontAwesomeIcon icon="map" />
         </Button>
         <Overlay rootClose placement="top" show={this.state.show} onHide={this.handleHide} target={() => this.button}>
           <Popover id="popover-trigger-click-root-close" className="fm-menu">
@@ -84,7 +84,7 @@ class MapSwitchButton extends React.Component {
                     >
                       <FontAwesomeIcon icon={mapType === type ? 'check-circle-o' : 'circle-o'} />
                       {' '}
-                      <FontAwesomeIcon icon={icon || 'map-o'} />
+                      <FontAwesomeIcon icon={icon || 'map'} />
                       {' '}
                       <span style={{ textDecoration: zoom < minZoom ? 'line-through' : 'none' }}>
                         {t(`mapLayers.base.${type}`)}
@@ -115,7 +115,7 @@ class MapSwitchButton extends React.Component {
                   >
                     <FontAwesomeIcon icon={overlays.includes(type) ? 'check-square-o' : 'square-o'} />
                     {' '}
-                    <FontAwesomeIcon icon={icon || 'map-o'} />
+                    <FontAwesomeIcon icon={icon || 'map'} />
                     {' '}
                     <span style={{ textDecoration: zoom < minZoom || strava && !stravaAuth ? 'line-through' : 'none' }}>
                       {t(`mapLayers.overlay.${type}`)}

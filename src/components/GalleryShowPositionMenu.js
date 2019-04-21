@@ -7,7 +7,7 @@ import Panel from 'react-bootstrap/lib/Panel';
 import { galleryShowOnTheMap } from 'fm3/actions/galleryActions';
 import Button from 'react-bootstrap/lib/Button';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import injectL10n from 'fm3/l10nInjector';
 
 class GalleryShowPositionMenu extends React.Component {

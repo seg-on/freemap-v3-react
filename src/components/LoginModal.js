@@ -5,7 +5,7 @@ import { compose } from 'redux';
 import Modal from 'react-bootstrap/lib/Modal';
 import Glyphicon from 'react-bootstrap/lib/Glyphicon';
 import Button from 'react-bootstrap/lib/Button';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { authLoginWithOsm, authLoginWithFacebook, authLoginWithGoogle, authLoginClose } from 'fm3/actions/authActions';
 import injectL10n from 'fm3/l10nInjector';
 
@@ -14,18 +14,18 @@ function LoginModal({ onClose, onLoginWithFacebook, onLoginWithGoogle, onLoginWi
     <Modal show onHide={onClose}>
       <Modal.Header closeButton>
         <Modal.Title>
-          <FontAwesomeIcon icon="sign-in" /> {t('more.logIn')}
+          <FontAwesomeIcon icon="sign-in-alt" /> {t('more.logIn')}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Button onClick={onLoginWithFacebook} bsSize="large" block style={{ backgroundColor: '#3b5998', color: '#fff' }}>
-          <FontAwesomeIcon icon="facebook-official" /> {t('logIn.with.facebook')}
+          <FontAwesomeIcon icon={['fab', 'facebook']} /> {t('logIn.with.facebook')}
         </Button>
         <Button onClick={onLoginWithGoogle} bsSize="large" block style={{ backgroundColor: '#DB4437', color: '#fff' }}>
-          <FontAwesomeIcon icon="google" /> {t('logIn.with.google')}
+          <FontAwesomeIcon icon={['fab', 'google']} /> {t('logIn.with.google')}
         </Button>
         <Button onClick={onLoginWithOsm} bsSize="large" block style={{ backgroundColor: '#8bdc81', color: '#585858' }}>
-          <FontAwesomeIcon icon="map-o" /> {t('logIn.with.osm')}
+          <FontAwesomeIcon icon="map" /> {t('logIn.with.osm')}
         </Button>
       </Modal.Body>
       <Modal.Footer>

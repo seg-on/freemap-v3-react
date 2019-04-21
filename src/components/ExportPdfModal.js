@@ -13,7 +13,7 @@ import ButtonGroup from 'react-bootstrap/lib/ButtonGroup';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { setActiveModal, exportPdf } from 'fm3/actions/mainActions';
 import injectL10n from 'fm3/l10nInjector';
 
@@ -119,7 +119,7 @@ export class ExportPdfModal extends React.Component {
               onClick={() => this.setState({ area: 'infopoints' })}
               disabled={!hasInfopoints}
             >
-              Plochu ohraničenú bodmi v mape <FontAwesomeIcon icon="thumb-tack" />
+              Plochu ohraničenú bodmi v mape <FontAwesomeIcon icon="thumbtack" />
             </Button>
           </ButtonGroup>
           <hr />

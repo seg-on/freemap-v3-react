@@ -17,7 +17,7 @@ import { toastsAdd } from 'fm3/actions/toastsActions';
 
 import * as FmPropTypes from 'fm3/propTypes';
 import { getCurrentPosition } from 'fm3/geoutils';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import mapEventEmitter from 'fm3/emitters/mapEventEmitter';
 
 class RoutePlannerMenu extends React.Component {
@@ -124,10 +124,10 @@ class RoutePlannerMenu extends React.Component {
       ['imhd', 'bus'],
       ['bike', 'bicycle'],
       ['bikesharing', 'bicycle'],
-      (expertMode || transportType === 'foot-stroller') && ['foot-stroller', 'wheelchair-alt'],
-      ['nordic', '!icon-skier-skiing'],
-      (expertMode || transportType === 'ski') && ['ski', '!icon-skiing'],
-      ['foot', '!icon-hiking'],
+      (expertMode || transportType === 'foot-stroller') && ['foot-stroller', 'wheelchair'],
+      ['nordic', 'skiing-nordic'],
+      (expertMode || transportType === 'ski') && ['ski', 'skiing'],
+      ['foot', 'hiking'],
     ];
 
     const activeTransportType = transportTypes.filter(x => x).find(([type]) => type === transportType);
@@ -156,7 +156,7 @@ class RoutePlannerMenu extends React.Component {
             active={pickPointMode === 'start'}
           >
             <MenuItem>
-              <FontAwesomeIcon icon="map-marker" /> {t('routePlanner.point.pick')}
+              <FontAwesomeIcon icon="map-marker-alt" /> {t('routePlanner.point.pick')}
             </MenuItem>
             <MenuItem onClick={this.handleStartCurrent}>
               <FontAwesomeIcon icon="bullseye" /> {t('routePlanner.point.current')}
@@ -180,7 +180,7 @@ class RoutePlannerMenu extends React.Component {
                 active={pickPointMode === 'finish'}
               >
                 <MenuItem>
-                  <FontAwesomeIcon icon="map-marker" /> {t('routePlanner.point.pick')}
+                  <FontAwesomeIcon icon="map-marker-alt" /> {t('routePlanner.point.pick')}
                 </MenuItem>
                 <MenuItem onClick={this.handleFinishCurrent}>
                   <FontAwesomeIcon icon="bullseye" /> {t('routePlanner.point.current')}
@@ -198,7 +198,7 @@ class RoutePlannerMenu extends React.Component {
           title={!activeTransportType ? '' : (
             <>
               <FontAwesomeIcon icon={activeTransportType[1]} />
-              {['car', 'bikesharing'].includes(activeTransportType[0]) && <FontAwesomeIcon icon="money" />}
+              {['car', 'bikesharing'].includes(activeTransportType[0]) && <FontAwesomeIcon icon="money-bill-alt" />}
               <span className="hidden-xs"> {t(`routePlanner.transportType.${activeTransportType[0]}`).replace(/\s*,.*/, '')}</span>
             </>
           )}
@@ -212,7 +212,7 @@ class RoutePlannerMenu extends React.Component {
                 active={transportType === type}
                 onClick={() => onTransportTypeChange(type)}
               >
-                <FontAwesomeIcon icon={icon} />{['car', 'bikesharing'].includes(type) && <FontAwesomeIcon icon="money" />}
+                <FontAwesomeIcon icon={icon} />{['car', 'bikesharing'].includes(type) && <FontAwesomeIcon icon="money-bill-alt" />}
                 {' '}
                 {t(`routePlanner.transportType.${type}`)}
               </MenuItem>
@@ -292,7 +292,7 @@ class RoutePlannerMenu extends React.Component {
           disabled={!routeFound}
           title={t('general.elevationProfile')}
         >
-          <FontAwesomeIcon icon="bar-chart" />
+          <FontAwesomeIcon icon="chart-area" />
           <span className="hidden-xs"> {t('general.elevationProfile')}</span>
         </Button>
       </>

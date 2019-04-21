@@ -35,9 +35,9 @@ const NLC_ATTR = {
 export const baseLayers = [
   ...[
     ['A', 'car'],
-    ['T', '!icon-hiking'],
+    ['T', 'hiking'],
     ['C', 'bicycle'],
-    ['K', '!icon-skier-skiing'],
+    ['K', 'skiing-nordic'],
   ].map(([type, icon]) => ({
     type,
     icon,
@@ -143,7 +143,7 @@ export const baseLayers = [
     url: 'http://tms.freemap.sk/historicke/{z}/{x}/{y}.png',
     minNativeZoom: 12,
     maxNativeZoom: 12,
-    icon: 'institution',
+    icon: 'landmark',
     showOnlyInExpertMode: true,
     attribution: [],
     key: 'h',
@@ -181,7 +181,7 @@ export const baseLayers = [
 export const overlayLayers = [
   {
     type: 'I',
-    icon: 'picture-o',
+    icon: 'image',
     minZoom: 0,
     key: 'F',
     zIndex: 3,
@@ -205,7 +205,7 @@ export const overlayLayers = [
   },
   ...['both', 'ride', 'run', /* 'water', */ 'winter'].map((type, i) => ({
     type: `s${i}`,
-    icon: 'scribd', // TODO use correct logo
+    icon: ['fab', 'strava'],
     url: `//heatmap-external-{s}.strava.com/tiles-auth/${type}/bluered/{z}/{x}/{y}.png?px=256`,
     attribution: [STRAVA_ATTR],
     minZoom: 0,
@@ -217,7 +217,7 @@ export const overlayLayers = [
   })),
   {
     type: 'g',
-    icon: '!icon-gps-device',
+    icon: 'mobile-alt',
     url: '//gps-{s}.tile.openstreetmap.org/lines/{z}/{x}/{y}.png',
     attribution: [
       OSM_MAP_ATTR,
@@ -231,7 +231,7 @@ export const overlayLayers = [
   },
   {
     type: 't',
-    icon: '!icon-hiking',
+    icon: 'hiking',
     url: '//tiles.freemap.sk/trails/{z}/{x}/{y}.png',
     attribution: [
       FM_ATTR,
@@ -259,7 +259,7 @@ export const overlayLayers = [
   },
   {
     type: 'q',
-    icon: 'snowflake-o',
+    icon: 'snowflake',
     url: '//www.opensnowmap.org/pistes/{z}/{x}/{y}.png',
     attribution: [
       {
@@ -290,7 +290,7 @@ export const overlayLayers = [
   })),
   {
     type: 'r',
-    icon: 'pencil-square-o',
+    icon: 'edit',
     url: '//old.freemap.sk/layers/renderedby/?/{z}/{x}/{y}',
     minZoom: 8,
     maxNativeZoom: 12,

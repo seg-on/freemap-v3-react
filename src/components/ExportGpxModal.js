@@ -9,7 +9,7 @@ import Modal from 'react-bootstrap/lib/Modal';
 import Checkbox from 'react-bootstrap/lib/Checkbox';
 import Alert from 'react-bootstrap/lib/Alert';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { setActiveModal, exportGpx } from 'fm3/actions/mainActions';
 import injectL10n from 'fm3/l10nInjector';
 
@@ -17,12 +17,12 @@ const exportableDefinitions = [
   // { type: 'search', icon: 'search', name: 'výsledok hľadania' },
   { type: 'plannedRoute', icon: 'map-signs' },
   { type: 'objects', icon: 'map-marker' },
-  { type: 'pictures', icon: 'picture-o' },
-  { type: 'distanceMeasurement', icon: 'arrows-h' },
+  { type: 'pictures', icon: 'image' },
+  { type: 'distanceMeasurement', icon: 'arrows-alt-h' },
   { type: 'areaMeasurement', icon: 'square' },
-  { type: 'elevationMeasurement', icon: 'long-arrow-up' },
-  { type: 'infoPoint', icon: 'thumb-tack' },
-  // { type: 'changesets', icon: 'pencil', name: 'zmeny v mape' },
+  { type: 'elevationMeasurement', icon: 'long-arrow-alt-up' },
+  { type: 'infoPoint', icon: 'thumbtack' },
+  // { type: 'changesets', icon: 'pencil-alt', name: 'zmeny v mape' },
   // { type: 'mapDetils', icon: 'info', name: 'detaily v mape' },
 ];
 

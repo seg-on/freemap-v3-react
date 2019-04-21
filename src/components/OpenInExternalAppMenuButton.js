@@ -5,7 +5,7 @@ import MenuItem from 'react-bootstrap/lib/MenuItem';
 import Button from 'react-bootstrap/lib/Button';
 import Overlay from 'react-bootstrap/lib/Overlay';
 import Popover from 'react-bootstrap/lib/Popover';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getMapLeafletElement } from 'fm3/leafletElementHolder';
 import injectL10n from 'fm3/l10nInjector';
 
@@ -93,7 +93,7 @@ class OpenInExternalAppMenuButton extends React.Component {
     return (
       <>
         <Button ref={this.setButton} onClick={this.handleButtonClick} title={t('external.openInExternal')}>
-          <FontAwesomeIcon icon="external-link" />
+          <FontAwesomeIcon icon="external-link-alt" />
         </Button>
         <Overlay rootClose placement="bottom" show={this.state.show} onHide={this.handleHide} target={() => this.button}>
           <Popover id="popover-trigger-click-root-close" className="fm-menu">

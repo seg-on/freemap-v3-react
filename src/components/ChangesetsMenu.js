@@ -10,7 +10,7 @@ import FormControl from 'react-bootstrap/lib/FormControl';
 import ButtonGroup from 'react-bootstrap/lib/ButtonGroup';
 import MenuItem from 'react-bootstrap/lib/MenuItem';
 import DropdownButton from 'react-bootstrap/lib/DropdownButton';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import injectL10n from 'fm3/l10nInjector';
 
 import { changesetsSetDays, changesetsSetAuthorName } from 'fm3/actions/changesetsActions';
@@ -62,7 +62,7 @@ class ChangesetsMenu extends React.Component {
     return (
       <>
         <span className="fm-label">
-          <FontAwesomeIcon icon="pencil" />
+          <FontAwesomeIcon icon="pencil-alt" />
           <span className="hidden-xs">
             {' '}
             {t('tools.changesets')}
@@ -108,7 +108,7 @@ class ChangesetsMenu extends React.Component {
             onClick={() => onChangesetsSetAuthorNameAndRefresh(days, authorName)}
             title={t('changesets.download')}
           >
-            <FontAwesomeIcon icon="refresh" />
+            <FontAwesomeIcon icon="sync-alt" />
             <span className="hidden-xs">
               {' '}
               {t('changesets.download')}

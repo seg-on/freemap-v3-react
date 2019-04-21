@@ -12,7 +12,7 @@ import ControlLabel from 'react-bootstrap/lib/ControlLabel';
 import Checkbox from 'react-bootstrap/lib/Checkbox';
 import InputGroup from 'react-bootstrap/lib/InputGroup';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { setActiveModal } from 'fm3/actions/mainActions';
 import injectL10n from 'fm3/l10nInjector';

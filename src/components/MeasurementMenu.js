@@ -13,7 +13,7 @@ import { elevationMeasurementSetPoint } from 'fm3/actions/elevationMeasurementAc
 
 import { elevationChartSetTrackGeojson, elevationChartClose } from 'fm3/actions/elevationChartActions';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ButtonGroup from 'react-bootstrap/lib/ButtonGroup';
 import Button from 'react-bootstrap/lib/Button';
 import * as FmPropTypes from 'fm3/propTypes';
@@ -88,17 +88,17 @@ class MeasurementMenu extends React.Component {
     return (
       <>
         <span className="fm-label">
-          <FontAwesomeIcon icon="!icon-ruler" />
+          <FontAwesomeIcon icon="ruler" />
           <span className="hidden-xs"> {t('tools.measurement')}</span>
         </span>
         {' '}
         <ButtonGroup>
           <Button onClick={() => onToolSet('measure-dist')} active={tool === 'measure-dist'} title={t('measurement.distance')}>
-            <FontAwesomeIcon icon="arrows-h" />
+            <FontAwesomeIcon icon="arrows-alt-h" />
             <span className="hidden-xs"> {t('measurement.distance')}</span>
           </Button>
           <Button onClick={() => onToolSet('measure-ele')} active={tool === 'measure-ele'} title={t('measurement.elevation')}>
-            <FontAwesomeIcon icon="long-arrow-up" />
+            <FontAwesomeIcon icon="long-arrow-alt-up" />
             <span className="hidden-xs"> {t('measurement.elevation')}</span>
           </Button>
           <Button onClick={() => onToolSet('measure-area')} active={tool === 'measure-area'} title={t('measurement.area')}>
@@ -109,7 +109,7 @@ class MeasurementMenu extends React.Component {
         {' '}
         {tool === 'measure-dist' && (
           <Button active={elevationChartTrackGeojson !== null} onClick={this.toggleElevationChart} disabled={!routeDefined}>
-            <FontAwesomeIcon icon="bar-chart" />
+            <FontAwesomeIcon icon="chart-area" />
             <span className="hidden-xs"> {t('general.elevationProfile')}</span>
           </Button>
         )}

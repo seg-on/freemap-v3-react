@@ -6,7 +6,7 @@ import MenuItem from 'react-bootstrap/lib/MenuItem';
 import Button from 'react-bootstrap/lib/Button';
 import Overlay from 'react-bootstrap/lib/Overlay';
 import Popover from 'react-bootstrap/lib/Popover';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { setTool } from 'fm3/actions/mainActions';
 import injectL10n from 'fm3/l10nInjector';
 
@@ -58,12 +58,12 @@ class ToolsMenuButton extends React.Component {
               {
                 [
                   ['route-planner', 'map-signs', 'routePlanner'],
-                  ['objects', 'map-marker', 'objects'],
-                  ['gallery', 'picture-o', 'gallery'],
-                  ['measure-dist', '!icon-ruler', 'measurement'],
+                  ['objects', 'map-marker-alt', 'objects'],
+                  ['gallery', 'image', 'gallery'],
+                  ['measure-dist', 'ruler', 'measurement'],
                   ['track-viewer', 'road', 'trackViewer'],
-                  ['info-point', 'thumb-tack', 'infoPoint'],
-                  ['changesets', 'pencil', 'changesets'],
+                  ['info-point', 'thumbtack', 'infoPoint'],
+                  ['changesets', 'pencil-alt', 'changesets'],
                   ['map-details', 'info', 'mapDetails'],
                 ].map(([newTool, icon, name]) => (
                   <MenuItem

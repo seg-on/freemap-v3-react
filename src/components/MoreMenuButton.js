@@ -6,7 +6,7 @@ import MenuItem from 'react-bootstrap/lib/MenuItem';
 import Button from 'react-bootstrap/lib/Button';
 import Overlay from 'react-bootstrap/lib/Overlay';
 import Popover from 'react-bootstrap/lib/Popover';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import tips from 'fm3/tips/index.json';
 import injectL10n from 'fm3/l10nInjector';
 
@@ -177,11 +177,11 @@ class MoreMenuButton extends React.Component {
                   </MenuItem>
                   {user ? (
                     <MenuItem onClick={this.handleLogoutClick}>
-                      <FontAwesomeIcon icon="sign-out" /> {t('more.logOut', { name: user.name })}
+                      <FontAwesomeIcon icon="sign-out-alt" /> {t('more.logOut', { name: user.name })}
                     </MenuItem>
                   ) : (
                     <MenuItem onClick={this.handleLoginClick}>
-                      <FontAwesomeIcon icon="sign-in" /> {t('more.logIn')}
+                      <FontAwesomeIcon icon="sign-in-alt" /> {t('more.logIn')}
                     </MenuItem>
                   )}
                   <MenuItem onClick={this.handleSettingsShowClick}>
@@ -189,13 +189,13 @@ class MoreMenuButton extends React.Component {
                   </MenuItem>
                   <MenuItem divider />
                   <MenuItem onClick={this.handlePdfExportClick}>
-                    <FontAwesomeIcon icon="file-pdf-o" /> {t('more.pdfExport')}
+                    <FontAwesomeIcon icon="file-pdf" /> {t('more.pdfExport')}
                   </MenuItem>
                   <MenuItem onClick={this.handleGpxExportClick}>
                     <FontAwesomeIcon icon="share" /> {t('more.gpxExport')}
                   </MenuItem>
                   <MenuItem onClick={this.handleItemClick} href="http://wiki.freemap.sk/FileDownload" target="_blank">
-                    <FontAwesomeIcon icon="!icon-gps-device" /> {t('more.mapExports')}
+                    <FontAwesomeIcon icon="mobile-alt" /> {t('more.mapExports')}
                   </MenuItem>
                   <MenuItem onClick={this.handleShareClick}>
                     <FontAwesomeIcon icon="share-alt" /> {t('more.shareMap')}
@@ -208,7 +208,7 @@ class MoreMenuButton extends React.Component {
                     <FontAwesomeIcon icon="exclamation-triangle" /> {t('more.reportMapError')}
                   </MenuItem>
                   <MenuItem onClick={this.handleItemClick} href="https://github.com/FreemapSlovakia/freemap-v3-react/issues/new" target="_blank">
-                    <FontAwesomeIcon icon="!icon-bug" /> {t('more.reportAppError')}
+                    <FontAwesomeIcon icon="bug" /> {t('more.reportAppError')}
                   </MenuItem>
                   <MenuItem divider />
                   <MenuItem onClick={this.handleHelpClick}>
@@ -228,14 +228,14 @@ class MoreMenuButton extends React.Component {
                   </MenuItem>
                   <MenuItem divider />
                   <MenuItem onClick={this.handleLegendClick}>
-                    <FontAwesomeIcon icon="map-o" /> {t('more.mapLegend')}
+                    <FontAwesomeIcon icon="map" /> {t('more.mapLegend')}
                   </MenuItem>
                   <MenuItem onClick={this.handleAboutClick}>
-                    <FontAwesomeIcon icon="address-card-o" /> {t('more.contacts')}
+                    <FontAwesomeIcon icon="address-card" /> {t('more.contacts')}
                   </MenuItem>
                   <MenuItem divider />
                   <MenuItem header>
-                    <FontAwesomeIcon icon="lightbulb-o" /> {t('more.tips')}
+                    <FontAwesomeIcon icon="lightbulb" /> {t('more.tips')}
                   </MenuItem>
                   {
                     tips.map(([key, name, icon]) => (
@@ -281,7 +281,7 @@ class MoreMenuButton extends React.Component {
                   style={{ color: '#3b5998' }}
                   title={t('more.facebook')}
                 >
-                  <FontAwesomeIcon icon="facebook-official" />
+                  <FontAwesomeIcon icon={['fab', 'facebook']} />
                 </a>
                 {' '}
                 <a
@@ -292,7 +292,7 @@ class MoreMenuButton extends React.Component {
                   style={{ color: '#0084b4' }}
                   title={t('more.twitter')}
                 >
-                  <FontAwesomeIcon icon="twitter" />
+                  <FontAwesomeIcon icon={['fab', 'twitter']} />
                 </a>
                 {' '}
                 <a
@@ -303,7 +303,7 @@ class MoreMenuButton extends React.Component {
                   style={{ color: '#333' }}
                   title={t('more.github')}
                 >
-                  <FontAwesomeIcon icon="github" />
+                  <FontAwesomeIcon icon={['fab', 'github']} />
                 </a>
               </div>
             )}

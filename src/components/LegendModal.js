@@ -9,7 +9,7 @@ import FormGroup from 'react-bootstrap/lib/FormGroup';
 import PanelGroup from 'react-bootstrap/lib/PanelGroup';
 import Panel from 'react-bootstrap/lib/Panel';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { setActiveModal } from 'fm3/actions/mainActions';
 
 export function Legend({ onModalClose }) {
@@ -17,7 +17,7 @@ export function Legend({ onModalClose }) {
     <Modal show onHide={onModalClose} bsSize="small">
       <Modal.Header closeButton>
         <Modal.Title>
-          <FontAwesomeIcon icon="map-o" /> Legenda mapy
+          <FontAwesomeIcon icon="map" /> Legenda mapy
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

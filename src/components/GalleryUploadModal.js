@@ -18,7 +18,7 @@ import { galleryAddItem, galleryRemoveItem, gallerySetItem, gallerySetItemForPos
 import { toastsAdd } from 'fm3/actions/toastsActions';
 
 import GalleryUploadItem from 'fm3/components/GalleryUploadItem';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import injectL10n from 'fm3/l10nInjector';
 
 const ExifReader = require('exifreader');

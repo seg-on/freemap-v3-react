@@ -18,7 +18,7 @@ import Popover from 'react-bootstrap/lib/Popover';
 import injectL10n from 'fm3/l10nInjector';
 
 import Layers from 'fm3/components/Layers';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Toasts from 'fm3/components/Toasts';
 
 import SearchMenu from 'fm3/components/SearchMenu';
@@ -283,7 +283,7 @@ class Main extends React.Component {
                   <>
                     {' '}
                     <Button onClick={this.handleToolCloseClick} title={t('main.closeTool')}>
-                      <FontAwesomeIcon icon="close" /><span className="hidden-xs"> {t('main.close')}</span>
+                      <FontAwesomeIcon icon="times" /><span className="hidden-xs"> {t('main.close')}</span>
                     </Button>
                   </>
                 )}
@@ -339,7 +339,7 @@ class Main extends React.Component {
                   title={t('main.locateMe')}
                   active={this.props.locate}
                 >
-                  <FontAwesomeIcon icon="dot-circle-o" />
+                  <FontAwesomeIcon icon={['far', 'dot-circle']} />
                 </Button>
               )}
             </ButtonToolbar>

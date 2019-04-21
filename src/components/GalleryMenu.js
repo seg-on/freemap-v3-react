@@ -12,13 +12,13 @@ import DropdownButton from 'react-bootstrap/lib/DropdownButton';
 import MenuItem from 'react-bootstrap/lib/MenuItem';
 import Form from 'react-bootstrap/lib/Form';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 function GalleryMenu({ onUpload, onFilterShow, filterIsActive, onOrderSelect, t }) {
   return (
     <Form inline>
       <span className="fm-label">
-        <FontAwesomeIcon icon="picture-o" />
+        <FontAwesomeIcon icon="image" />
         <span className="hidden-xs"> {t('tools.gallery')}</span>
       </span>
       {' '}

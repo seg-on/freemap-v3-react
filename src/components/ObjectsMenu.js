@@ -8,7 +8,7 @@ import { objectsSetFilter } from 'fm3/actions/objectsActions';
 import { mapRefocus } from 'fm3/actions/mapActions';
 import { toastsAdd } from 'fm3/actions/toastsActions';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
 import FormControl from 'react-bootstrap/lib/FormControl';
 import Dropdown from 'react-bootstrap/lib/Dropdown';
@@ -76,7 +76,7 @@ class ObjectsMenu extends React.Component {
     return (
       <>
         <span className="fm-label">
-          <FontAwesomeIcon icon="map-marker" />
+          <FontAwesomeIcon icon="map-marker-alt" />
           <span className="hidden-xs"> {t('tools.objects')}</span>
         </span>
         {' '}

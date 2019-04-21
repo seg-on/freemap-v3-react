@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import Panel from 'react-bootstrap/lib/Panel';
 import Button from 'react-bootstrap/lib/Button';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { setSelectingHomeLocation } from 'fm3/actions/mainActions';
 

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Button from 'react-bootstrap/lib/Button';
 
 import { infoPointAdd, infoPointDelete } from 'fm3/actions/infoPointActions';
@@ -37,7 +37,7 @@ class InfoPointMenu extends React.Component {
     return (
       <>
         <span className="fm-label">
-          <FontAwesomeIcon icon="thumb-tack" />
+          <FontAwesomeIcon icon="thumbtack" />
           <span className="hidden-xs"> {t('tools.infoPoint')}</span>
         </span>
         {' '}
@@ -47,7 +47,7 @@ class InfoPointMenu extends React.Component {
         </Button>
         {' '}
         <Button onClick={onDelete} disabled={!isActive}>
-          <FontAwesomeIcon icon="trash-o" />
+          <FontAwesomeIcon icon="trash" />
           <span className="hidden-xs"> {t('general.delete')}</span>
         </Button>
       </>

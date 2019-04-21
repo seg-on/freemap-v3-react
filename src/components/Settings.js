@@ -24,7 +24,7 @@ import 'react-rangeslider/lib/index.css';
 
 import { setActiveModal, setSelectingHomeLocation, saveSettings } from 'fm3/actions/mainActions';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { formatGpsCoord } from 'fm3/geoutils';
 import mapEventEmitter from 'fm3/emitters/mapEventEmitter';
 import * as FmPropTypes from 'fm3/propTypes';
@@ -172,7 +172,7 @@ class Settings extends React.Component {
                   </Tooltip>
                 )}
               >
-                <FontAwesomeIcon icon="question-circle-o" />
+                <FontAwesomeIcon icon="question-circle" />
               </OverlayTrigger>
             </Checkbox>
             <Tabs id="setting-tabs">

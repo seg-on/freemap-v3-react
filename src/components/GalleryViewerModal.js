@@ -10,7 +10,7 @@ import * as at from 'fm3/actionTypes';
 import * as FmPropTypes from 'fm3/propTypes';
 import injectL10n from 'fm3/l10nInjector';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import GalleryEditForm from 'fm3/components/GalleryEditForm';
 
 import Modal from 'react-bootstrap/lib/Modal';
@@ -394,7 +394,7 @@ class GalleryViewerModal extends React.Component {
             </>
           )}
           <Button onClick={onShowOnTheMap}>
-            <FontAwesomeIcon icon="dot-circle-o" />
+            <FontAwesomeIcon icon={['far', 'dot-circle']} />
             <span className="hidden-xs"> {t('gallery.viewer.showOnTheMap')}</span>
           </Button>
           {document.exitFullscreen && (
@@ -404,7 +404,7 @@ class GalleryViewerModal extends React.Component {
             </Button>
           )}
           <Button href={`${process.env.API_URL}/gallery/pictures/${activeImageId}/image`} target="_blank">
-            <FontAwesomeIcon icon="external-link" />
+            <FontAwesomeIcon icon="external-link-alt" />
             <span className="hidden-sm hidden-xs"> {t('gallery.viewer.openInNewWindow')}</span>
           </Button>
           <Button onClick={onClose}>

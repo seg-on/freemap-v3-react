@@ -8,7 +8,7 @@ import Button from 'react-bootstrap/lib/Button';
 import Modal from 'react-bootstrap/lib/Modal';
 import FormGroup from 'react-bootstrap/lib/FormGroup';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { setActiveModal } from 'fm3/actions/mainActions';
 import injectL10n from 'fm3/l10nInjector';
 
@@ -34,7 +34,7 @@ export function SupportUsModal({ onModalClose, t }) {
           <input name="cmd" value="_s-xclick" type="hidden" />
           <input name="hosted_button_id" value="DB6Y3ZAB2XCPN" type="hidden" />
           <Button type="submit">
-            <FontAwesomeIcon icon="paypal" /> {t('supportUs.paypal')}
+            <FontAwesomeIcon icon={['fab', 'paypal']} /> {t('supportUs.paypal')}
           </Button>
         </form>
         <br />

@@ -24,6 +24,7 @@ import 'fm3/googleAnalytics';
 import 'fm3/fbLoader';
 import createStore from 'fm3/storeCreator';
 import storage from 'fm3/storage';
+import 'fm3/fa';
 
 import 'font-awesome/scss/font-awesome.scss';
 import 'fm3/styles/bootstrap-override.scss';

@@ -38,7 +38,7 @@ class Changesets extends React.Component {
       const opacity = this.opacityOf(changeset, now);
       return (
         <RichMarker
-          faIcon="pencil"
+          faIcon="pencil-alt"
           opacity={opacity}
           key={changeset.id}
           faIconLeftPadding="2px"

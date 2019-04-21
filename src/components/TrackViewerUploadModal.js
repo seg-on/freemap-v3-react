@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import Dropzone from 'react-dropzone';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import Button from 'react-bootstrap/lib/Button';
 import Modal from 'react-bootstrap/lib/Modal';
@@ -52,7 +53,9 @@ class TrackViewerUploadModal extends React.Component {
     return (
       <Modal show onHide={onClose}>
         <Modal.Header closeButton>
-          <Modal.Title>{t('trackViewer.uploadModal.title')}</Modal.Title>
+          <Modal.Title>
+            <FontAwesomeIcon icon="upload" /> {t('trackViewer.uploadModal.title')}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Dropzone

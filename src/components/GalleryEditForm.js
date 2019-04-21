@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ReactTags from 'react-tag-autocomplete';
 import 'fm3/styles/react-tag-autocomplete.css';
 
@@ -161,7 +161,7 @@ export default class GalleryEditForm extends React.Component {
             />
             <InputGroup.Button>
               <Button onClick={onPositionPick}>
-                <FontAwesomeIcon icon="dot-circle-o" />{t('gallery.editForm.setLocation')}
+                <FontAwesomeIcon icon={['far', 'dot-circle']} />{t('gallery.editForm.setLocation')}
               </Button>
             </InputGroup.Button>
           </InputGroup>

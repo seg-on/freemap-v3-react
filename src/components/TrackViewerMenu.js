@@ -9,7 +9,7 @@ import MenuItem from 'react-bootstrap/lib/MenuItem';
 
 import injectL10n from 'fm3/l10nInjector';
 
-import FontAwesomeIcon from 'fm3/components/FontAwesomeIcon';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { setActiveModal } from 'fm3/actions/mainActions';
 import { trackViewerUploadTrack, trackViewerColorizeTrackBy, trackViewerShowInfo, trackViewerToggleElevationChart } from 'fm3/actions/trackViewerActions';
@@ -68,7 +68,7 @@ class TrackViewerMenu extends React.Component {
           onClick={onToggleElevationChart}
           disabled={!trackGeojsonIsSuitableForElevationChart}
         >
-          <FontAwesomeIcon icon="bar-chart" />
+          <FontAwesomeIcon icon="chart-area" />
           <span className="hidden-xs"> {t('general.elevationProfile')}</span>
         </Button>
         {' '}
