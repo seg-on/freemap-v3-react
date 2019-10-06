@@ -49,6 +49,7 @@ export interface PdfExportOptions {
   horseTrails: boolean;
   scale: number;
   area: 'visible' | 'infopoints';
+  format: 'pdf' | 'svg' | 'png' | 'jpeg';
 }
 
 export const setExpertMode = createStandardAction('SET_EXPERT_MODE')<boolean>();

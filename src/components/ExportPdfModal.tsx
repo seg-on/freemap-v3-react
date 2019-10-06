@@ -39,6 +39,7 @@ export class ExportPdfModal extends React.Component<Props, State> {
     horseTrails: true,
     scale: 1,
     area: 'visible',
+    format: 'svg',
   };
 
   handleExportClick = () => {

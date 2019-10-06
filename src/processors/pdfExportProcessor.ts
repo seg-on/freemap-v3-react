@@ -1,6 +1,7 @@
 import { getMapLeafletElement } from 'fm3/leafletElementHolder';
 import { setActiveModal, exportPdf } from 'fm3/actions/mainActions';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
+import qs from 'query-string';
 
 export const exportPdfProcessor: Processor<typeof exportPdf> = {
   actionCreator: exportPdf,
@@ -19,6 +20,7 @@ export const exportPdfProcessor: Processor<typeof exportPdf> = {
       bicycleTrails,
       skiTrails,
       horseTrails,
+      format,
     } = action.payload;
 
     let w: number | undefined = undefined;
@@ -42,11 +44,21 @@ export const exportPdfProcessor: Processor<typeof exportPdf> = {
       }
     }
 
-    window.open(
-      `https://outdoor.tiles.freemap.sk/pdf?zoom=${getState().map.zoom}` +
-        `&bbox=${w},${s},${e},${n}&scale=${scale}` +
-        `&hikingTrails=${hikingTrails}&bicycleTrails=${bicycleTrails}&skiTrails=${skiTrails}&horseTrails=${horseTrails}&shading=${shadedRelief}&contours=${contours}`,
-    );
+    const query = qs.stringify({
+      zoom: getState().map.zoom,
+      bbox: `${w},${s},${e},${n}`,
+      scale,
+      hikingTrails,
+      bicycleTrails,
+      skiTrails,
+      horseTrails,
+      shading: shadedRelief,
+      contours,
+      format,
+    });
+
+    window.open(`https://outdoor.tiles.freemap.sk/export?${query}`);
+
     dispatch(setActiveModal(null));
   },
 };
