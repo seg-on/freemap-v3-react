@@ -454,6 +454,11 @@ export default {
       name: 'Meno',
       email: 'E-Mail',
       noAuthInfo: 'Dostupné iba pre prihlásených používateľov.',
+      pairWith: {
+        google: 'Spárovať s Googlom',
+        facebook: 'Spárovať s Facebookom',
+        osm: 'Spárovať s OpenStreetMap',
+      },
     },
     general: {
       tips: 'Zobrazovať tipy po otvorení stránky',

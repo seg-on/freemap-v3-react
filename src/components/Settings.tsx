@@ -356,6 +356,36 @@ class SettingsInt extends React.Component<Props, State> {
                         maxLength={255}
                       />
                     </FormGroup>
+                    <Button
+                      // onClick={onLoginWithFacebook}
+                      bsSize="large"
+                      block
+                      style={{ backgroundColor: '#3b5998', color: '#fff' }}
+                      disabled={user.pairedWith.includes('facebook')}
+                    >
+                      <FontAwesomeIcon icon="facebook-official" />{' '}
+                      {t('settings.account.pairWith.facebook')}
+                    </Button>
+                    <Button
+                      // onClick={onLoginWithGoogle}
+                      bsSize="large"
+                      block
+                      style={{ backgroundColor: '#DB4437', color: '#fff' }}
+                      disabled={user.pairedWith.includes('google')}
+                    >
+                      <FontAwesomeIcon icon="google" />{' '}
+                      {t('settings.account.pairWith.google')}
+                    </Button>
+                    <Button
+                      // onClick={onLoginWithOsm}
+                      bsSize="large"
+                      block
+                      style={{ backgroundColor: '#8bdc81', color: '#585858' }}
+                      disabled={user.pairedWith.includes('osm')}
+                    >
+                      <FontAwesomeIcon icon="map-o" />{' '}
+                      {t('settings.account.pairWith.osm')}
+                    </Button>
                   </>
                 ) : (
                   <Alert>{t('settings.account.noAuthInfo')}</Alert>

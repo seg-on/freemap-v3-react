@@ -27,7 +27,7 @@ export const authLoginWithOsmProcessor: Processor = {
       const { data } = await httpRequest({
         getState,
         method: 'POST',
-        url: '/auth/login',
+        url: '/auth/login-osm',
         expectedStatus: 200,
         cancelActions: [],
       });

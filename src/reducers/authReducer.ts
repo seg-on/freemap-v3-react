@@ -30,6 +30,7 @@ export const authReducer = createReducer<AuthState, RootAction>(initialState)
       id: action.payload.id,
       authToken: action.payload.authToken,
       isAdmin: action.payload.isAdmin,
+      pairedWith: action.payload.pairedWith,
     },
   }))
   .handleAction(authLogout, state => ({ ...state, user: null }))

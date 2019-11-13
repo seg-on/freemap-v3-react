@@ -11,7 +11,7 @@ export const authLoginWithOsm2Processor: Processor<typeof authLoginWithOsm2> = {
     const { data } = await httpRequest({
       getState,
       method: 'POST',
-      url: '/auth/login2',
+      url: '/auth/login-osm-2',
       data: action.payload,
       expectedStatus: 200,
     });
