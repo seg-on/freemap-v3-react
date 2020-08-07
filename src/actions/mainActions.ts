@@ -101,6 +101,7 @@ export interface ObjectsSelection {
 export interface DrawLinePolySelection {
   type: 'draw-lines' | 'draw-polygons';
   id?: number;
+  pointIndex?: number;
 }
 
 export interface OtherSelection {

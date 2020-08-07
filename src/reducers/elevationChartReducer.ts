@@ -2,7 +2,6 @@ import { RootAction } from 'fm3/actions';
 import {
   drawingLineAddPoint,
   drawingLineUpdatePoint,
-  drawingLineRemovePoint,
 } from 'fm3/actions/drawingLineActions';
 import {
   elevationChartRemoveActivePoint,
@@ -59,7 +58,6 @@ export const elevationChartReducer = createReducer<
   .handleAction(routePlannerSetResult, setInitialState)
   .handleAction(drawingLineAddPoint, setInitialState)
   .handleAction(drawingLineUpdatePoint, setInitialState)
-  .handleAction(drawingLineRemovePoint, setInitialState)
   .handleAction(elevationChartClose, setInitialState);
 
 function setInitialState() {

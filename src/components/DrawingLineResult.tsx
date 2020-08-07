@@ -1,11 +1,16 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { connect } from 'react-redux';
 import { Marker, Tooltip, Polyline, Polygon } from 'react-leaflet';
 import { LeafletEvent, DomEvent } from 'leaflet';
 import {
   drawingLineAddPoint,
   drawingLineUpdatePoint,
-  drawingLineRemovePoint,
   Point,
 } from 'fm3/actions/drawingLineActions';
 import { ElevationChartActivePoint } from 'fm3/components/ElevationChartActivePoint';
@@ -15,7 +20,7 @@ import { divIcon } from 'leaflet';
 import { RootState } from 'fm3/storeCreator';
 import { Dispatch } from 'redux';
 import { RootAction } from 'fm3/actions';
-import { selectFeature } from 'fm3/actions/mainActions';
+import { selectFeature, DrawLinePolySelection } from 'fm3/actions/mainActions';
 import { LatLon } from 'fm3/types/common';
 import { getMapLeafletElement } from 'fm3/leafletElementHolder';
 import { drawingPointMeasure } from 'fm3/actions/drawingPointActions';
@@ -41,15 +46,20 @@ const DrawingLineResultInt: React.FC<Props> = ({
   index,
   onPointAdd,
   onPointUpdate,
-  onPointRemove,
   onSelect,
   language,
-  selected,
+  selection,
 }) => {
   const points = line.points;
 
   const [coords, setCoords] = useState<LatLon | undefined>();
   const [touching, setTouching] = useState(false);
+
+  const selected =
+    (selection?.type === 'draw-lines' || selection?.type === 'draw-polygons') &&
+    index === selection?.id;
+
+  // const selectedPoint = selected && selection.pointIndex != null;
 
   const removeCoords = !!coords && (!selected || touching);
 
@@ -149,9 +159,13 @@ const DrawingLineResultInt: React.FC<Props> = ({
 
   const handleMarkerClick = useCallback(
     (id: number) => {
-      onPointRemove(index, id);
+      onSelect({
+        type: line.type === 'polygon' ? 'draw-polygons' : 'draw-lines',
+        id: index,
+        pointIndex: id,
+      });
     },
-    [index, onPointRemove],
+    [line.type, index, onSelect],
   );
 
   let prev: Point | null = null;
@@ -167,8 +181,11 @@ const DrawingLineResultInt: React.FC<Props> = ({
   );
 
   const handleSelect = useCallback(() => {
-    onSelect(line.type, index);
-  }, [onSelect, index, line]);
+    onSelect({
+      type: line.type === 'polygon' ? 'draw-polygons' : 'draw-lines',
+      id: index,
+    });
+  }, [onSelect, index, line.type]);
 
   const ps = useMemo(() => {
     const ps: Point[] = [];
@@ -192,6 +209,46 @@ const DrawingLineResultInt: React.FC<Props> = ({
 
     return ps;
   }, [points, line.type]);
+
+  const foo = (ele) => {
+    if (ele) {
+      ele.leafletElement._icon.classList.add(
+        'fm-dlr-id-' + ele.props['data-id'],
+      );
+    }
+  };
+
+  const style = useRef<any>(undefined);
+
+  useEffect(() => {
+    const s = document.createElement('style');
+    s.type = 'text/css';
+    document.getElementsByTagName('head')[0].appendChild(s);
+
+    style.current = s;
+
+    return () => {
+      document.getElementsByTagName('head')[0].removeChild(s);
+      style.current = undefined;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (style.current) {
+      style.current.innerText = selection?.pointIndex
+        ? `.fm-dlr-id-${String(selection?.pointIndex).replace(
+            '.',
+            '_',
+          )} > div {background-color: red !important}`
+        : '';
+    }
+
+    return () => {
+      if (style.current) {
+        style.current.innerText = '';
+      }
+    };
+  }, [selection]);
 
   return (
     <>
@@ -268,6 +325,8 @@ const DrawingLineResultInt: React.FC<Props> = ({
 
           return i % 2 === 0 ? (
             <Marker
+              ref={foo}
+              data-id={String(p.id).replace('.', '_')}
               key={p.id}
               draggable
               position={{ lat: p.lat, lng: p.lon }}
@@ -329,10 +388,7 @@ function handleDragEnd() {
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => ({
   line: state.drawingLines.lines[ownProps.index],
   language: state.l10n.language,
-  selected:
-    (state.main.selection?.type === 'draw-lines' ||
-      state.main.selection?.type === 'draw-polygons') &&
-    ownProps.index === state.main.selection?.id,
+  selection: state.main.selection,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch<RootAction>) => ({
@@ -344,17 +400,8 @@ const mapDispatchToProps = (dispatch: Dispatch<RootAction>) => ({
     dispatch(drawingLineUpdatePoint({ index, point }));
     dispatch(drawingPointMeasure(true));
   },
-  onPointRemove(index: number, id: number) {
-    dispatch(drawingLineRemovePoint({ index, id }));
-    dispatch(drawingPointMeasure(true));
-  },
-  onSelect(type: 'polygon' | 'line', index: number) {
-    dispatch(
-      selectFeature({
-        type: type === 'polygon' ? 'draw-polygons' : 'draw-lines',
-        id: index,
-      }),
-    );
+  onSelect(selection: DrawLinePolySelection) {
+    dispatch(selectFeature(selection));
     dispatch(drawingPointMeasure(true));
   },
 });

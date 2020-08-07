@@ -23,10 +23,6 @@ export const drawingLineUpdatePoint = createAction(
   'DRAWING_LINE_UPDATE_POINT',
 )<{ index: number; point: Point }>();
 
-export const drawingLineRemovePoint = createAction(
-  'DRAWING_LINE_REMOVE_POINT',
-)<{ index: number; id: number }>();
-
 export const drawingLineSetLines = createAction('DRAWING_LINE_SET_LINES')<
   Line[]
 >();

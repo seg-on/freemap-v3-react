@@ -9,7 +9,6 @@ import {
 import {
   drawingLineAddPoint,
   drawingLineUpdatePoint,
-  drawingLineRemovePoint,
   drawingLineSetLines,
   Line,
 } from 'fm3/actions/drawingLineActions';
@@ -65,26 +64,35 @@ export const drawingLinesReducer = createReducer<DrawingLinesState, RootAction>(
         }
       }),
   )
-  .handleAction(drawingLineRemovePoint, (state, action) =>
-    produce(state, (draft) => {
-      const line = draft.lines[action.payload.index];
-      line.points = line.points.filter(
-        (point) => point.id !== action.payload.id,
-      );
-    }),
-  )
   .handleAction(drawingLineSetLines, (state, action) => ({
     ...state,
     lines: action.payload.filter(linefilter),
   }))
   .handleAction(deleteFeature, (state, action) =>
     produce(state, (draft) => {
+      const selection = action.payload;
       if (
-        (action.payload.type === 'draw-lines' ||
-          action.payload.type === 'draw-polygons') &&
-        action.payload.id !== undefined
+        (selection.type === 'draw-lines' ||
+          selection.type === 'draw-polygons') &&
+        selection.id !== undefined
       ) {
-        draft.lines.splice(action.payload.id, 1);
+        if (selection.pointIndex == null) {
+          draft.lines.splice(selection.id, 1);
+        } else {
+          const line = draft.lines[selection.id];
+
+          const pidx = line.points.findIndex(
+            (point) => point.id === selection.pointIndex,
+          );
+
+          draft.lines.push({
+            type: line.type,
+            label: line.label,
+            points: line.points.slice(0, pidx + 1),
+          });
+
+          line.points.splice(0, pidx);
+        }
       }
     }),
   )

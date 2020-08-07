@@ -8,7 +8,6 @@ import { RootState } from 'fm3/storeCreator';
 import {
   drawingLineAddPoint,
   drawingLineUpdatePoint,
-  drawingLineRemovePoint,
   Point,
 } from 'fm3/actions/drawingLineActions';
 import { cleanState as routePlannerCleanState } from './routePlannerReducer';
@@ -150,11 +149,10 @@ export function globalReducer(state: RootState, action: RootAction): RootState {
             ? 'draw-polygons'
             : 'draw-lines',
         id: index,
+        pointIndex: action.payload.point.id,
       };
     });
-  } else if (
-    isActionOf([drawingLineUpdatePoint, drawingLineRemovePoint], action)
-  ) {
+  } else if (isActionOf([drawingLineUpdatePoint], action)) {
     return produce(state, (draft) => {
       draft.main.selection = {
         type:
@@ -162,6 +160,7 @@ export function globalReducer(state: RootState, action: RootAction): RootState {
             ? 'draw-polygons'
             : 'draw-lines',
         id: action.payload.index,
+        pointIndex: action.payload.point.id,
       };
     });
   } else if (isActionOf(drawingPointAdd, action)) {
