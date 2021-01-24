@@ -202,9 +202,11 @@ export function GalleryViewerModal({ show }: Props): ReactElement {
       window.devicePixelRatio *
         (isFullscreen
           ? window.innerWidth
+          : window.matchMedia('(min-width: 1200px)').matches
+          ? 1110
           : window.matchMedia('(min-width: 992px)').matches
-          ? 868
-          : 568),
+          ? 770
+          : 470),
     )}`;
 
   const handlePositionPick = useCallback(() => {
@@ -223,7 +225,7 @@ export function GalleryViewerModal({ show }: Props): ReactElement {
   }, [dispatch]);
 
   return (
-    <Modal show={show} onHide={close} size="lg" keyboard={false}>
+    <Modal show={show} onHide={close} size="xl" keyboard={false}>
       <Modal.Header closeButton>
         <Modal.Title>
           {m?.gallery.viewer.title}{' '}
