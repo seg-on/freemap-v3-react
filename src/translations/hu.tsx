@@ -914,7 +914,6 @@ const hu: Messages = {
     googleMaps: 'Google tÃ©rkÃ©p',
     hiking_sk: 'hiking.sk',
     zbgis: 'ZBGIS',
-    of1950: 'Történelmi ortofotótérkép',
     mapy_cz: 'mapy.cz',
     josm: 'SzerkesztÃ©s JOSM-mal',
     id: 'SzerkesztÃ©s iD-vel',
