@@ -1,7 +1,8 @@
 import { enableUpdatingUrl } from 'fm3/actions/mainActions';
 import { mapRefocus } from 'fm3/actions/mapActions';
 import { wikiSetPoints } from 'fm3/actions/wikiActions';
-import { cancelRegister, httpRequest } from 'fm3/authAxios';
+import { httpRequest } from 'fm3/authAxios';
+import { cancelRegister } from 'fm3/cancelRegister';
 import { getMapLeafletElement } from 'fm3/leafletElementHolder';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
 import { OverpassElement, OverpassResult } from 'fm3/types/common';
@@ -42,7 +43,9 @@ export const wikiLayerProcessor: Processor = {
     } = getState();
 
     const curr = overlays.includes('w');
+
     const changed = prev != curr;
+
     prev = curr;
 
     if (!changed && !moved) {
@@ -117,9 +120,9 @@ export const wikiLayerProcessor: Processor = {
     const wikidatas: string[] = [];
 
     for (const e of okData.elements) {
-      if (e.tags.wikipedia) {
-        e.tags.wikipedia = decodeURIComponent(
-          e.tags.wikipedia.replace(/_/g, ' '),
+      if (e.tags['wikipedia']) {
+        e.tags['wikipedia'] = decodeURIComponent(
+          e.tags['wikipedia'].replace(/_/g, ' '),
         );
       }
 
@@ -136,7 +139,7 @@ export const wikiLayerProcessor: Processor = {
           m.set(wikipedia, e);
         }
       } else {
-        wikidatas.push(e.tags.wikidata);
+        wikidatas.push(e.tags['wikidata']);
       }
     }
 
@@ -174,11 +177,11 @@ export const wikiLayerProcessor: Processor = {
     const okData1 = assertType<WikiResponse>(data1);
 
     for (const e of okData.elements) {
-      if (e.tags.wikipedia) {
+      if (e.tags['wikipedia']) {
         continue;
       }
 
-      const sitelinks = okData1.entities?.[e.tags.wikidata]?.sitelinks;
+      const sitelinks = okData1.entities?.[e.tags['wikidata']]?.sitelinks;
 
       if (!sitelinks) {
         continue;
@@ -202,7 +205,8 @@ export const wikiLayerProcessor: Processor = {
         e1.type === 'relation' ||
         (e1.type === 'way' && e.type === 'relation')
       ) {
-        e.tags.wikipedia = wikipedia;
+        e.tags['wikipedia'] = wikipedia;
+
         m.set(wikipedia, e);
       }
     }
@@ -213,8 +217,8 @@ export const wikiLayerProcessor: Processor = {
           id: e.id,
           lat: e.type === 'node' ? e.lat : e.center.lat,
           lon: e.type === 'node' ? e.lon : e.center.lon,
-          name: e.tags.name,
-          wikipedia: e.tags.wikipedia,
+          name: e.tags['name'],
+          wikipedia: e.tags['wikipedia'],
         })),
       ),
     );

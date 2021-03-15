@@ -66,13 +66,11 @@ export const searchProcessor: Processor<typeof searchSetQuery> = {
 
     const { data } = await httpRequest({
       getState,
-      url: `https://nominatim.openstreetmap.org/search/${encodeURIComponent(
-        query,
-      )}`,
+      url: 'https://nominatim.openstreetmap.org/search',
       method: 'GET',
       params: {
+        q: query,
         format: 'json',
-        // eslint-disable-next-line
         polygon_geojson: 1,
         limit: 20,
         'accept-language': getState().l10n.language,
@@ -102,7 +100,7 @@ export const searchProcessor: Processor<typeof searchSetQuery> = {
 
     dispatch(searchSetResults(results));
 
-    if (action.payload.fromUrl && results.length) {
+    if (action.payload.fromUrl && results[0]) {
       dispatch(searchSelectResult(results[0]));
     }
   },

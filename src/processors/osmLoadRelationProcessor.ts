@@ -27,6 +27,7 @@ export const osmLoadRelationProcessor: Processor = {
     });
 
     const nodes: Record<number, OsmNode> = {};
+
     const ways: Record<number, OsmWay> = {};
 
     for (const item of assertType<OsmResult>(data).elements) {
@@ -54,12 +55,12 @@ export const osmLoadRelationProcessor: Processor = {
             if (n) {
               const props: Record<string, string> = {};
 
-              if (n.tags?.name) {
-                props.name = n.tags.name;
+              if (n.tags?.['name']) {
+                props['name'] = n.tags['name'];
               }
 
-              if (n.tags?.ele) {
-                props.ele = n.tags.ele;
+              if (n.tags?.['ele']) {
+                props['ele'] = n.tags['ele'];
               }
 
               features.push(point([n.lon, n.lat], props));
