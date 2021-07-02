@@ -32,18 +32,26 @@ export type Messages = {
     minutes: string;
     meters: string;
     createdAt: string;
+    modifiedAt: string;
     actions: string;
     add: string;
     clear: string;
     convertToDrawing: string;
     simplifyPrompt: string;
     copyUrl: string;
+    copyPageUrl: string;
     savingError: ({ err }: Err) => string;
     loadError: ({ err }: Err) => string;
     deleteError: ({ err }: Err) => string;
+    operationError: ({ err }: Err) => string;
     saved: string;
     deleted: string;
     visual: string;
+    copyOk: string;
+    noCookies: string;
+    name: string;
+    load: string;
+    unnamed: string;
   };
   selections: {
     objects: string;
@@ -51,6 +59,8 @@ export type Messages = {
     drawLines: string;
     drawPolygons: string;
     tracking: string;
+    linePoint: string;
+    polygonPoint: string;
   };
   tools: {
     none: string;
@@ -66,7 +76,7 @@ export type Messages = {
     changesets: string;
     mapDetails: string;
     tracking: string;
-    maps: JSX.Element;
+    maps: string;
   };
   routePlanner: {
     milestones: string;
@@ -264,8 +274,8 @@ export type Messages = {
     };
     imhdAttribution: string;
   };
-  more: {
-    more: string;
+  mainMenu: {
+    title: string;
     logOut: (name: string) => string;
     logIn: string;
     settings: string;
@@ -284,8 +294,12 @@ export type Messages = {
     github: string;
     automaticLanguage: string;
     pdfExport: string;
+    osmWiki: string;
+    wikiLink: string;
   };
   main: {
+    title: string;
+    description: string;
     clearMap: string;
     close: string;
     closeTool: string;
@@ -295,7 +309,8 @@ export type Messages = {
     zoomOut: string;
     devInfo: () => JSX.Element;
     copyright: string;
-    p2?: () => JSX.Element;
+    YellowBar?: () => JSX.Element;
+    cookieConsent: () => JSX.Element;
   };
   gallery: {
     filter: string;
@@ -309,6 +324,16 @@ export type Messages = {
       lastCaptured: string;
       leastRated: string;
       mostRated: string;
+      lastComment: string;
+    };
+    colorizeBy: string;
+    c: {
+      disable: string;
+      mine: string;
+      author: string;
+      rating: string;
+      takenAt: string;
+      createdAt: string;
     };
     viewer: {
       title: string;
@@ -372,6 +397,7 @@ export type Messages = {
       rating: string;
       noTags: string;
     };
+    noPicturesFound: string;
   };
   measurement: {
     distance: string;
@@ -429,6 +455,11 @@ export type Messages = {
       label: string;
       hint: string;
     };
+    split: string;
+    join: string;
+    continue: string;
+    stopDrawing: string;
+    selectPointToJoin: string;
   };
   settings: {
     tab: {
@@ -449,6 +480,8 @@ export type Messages = {
       name: string;
       email: string;
       noAuthInfo: string;
+      sendGalleryEmails: string;
+      DeleteInfo: () => JSX.Element;
     };
     general: {
       tips: string;
@@ -488,10 +521,17 @@ export type Messages = {
     };
   };
   mapDetails: {
-    road: string;
     notFound: string;
     fetchingError: ({ err }: Err) => string;
-    detail: ({ element }: { element: any }) => JSX.Element;
+    detail: ({
+      id,
+      type,
+      tags,
+    }: {
+      id: number;
+      type: 'node' | 'way' | 'relation';
+      tags: Record<string, string>;
+    }) => JSX.Element;
   };
   objects: {
     type: string;
@@ -640,6 +680,7 @@ export type Messages = {
       desc: string;
       modifyTitle: (name: ReactNode) => JSX.Element;
       createTitle: (name: ReactNode) => JSX.Element;
+      storageWarning: string;
     };
     accessToken: {
       token: string;
@@ -726,19 +767,23 @@ export type Messages = {
     alert: () => JSX.Element;
   };
   maps: {
-    noMap: string;
-    create: string;
+    noMapFound: string;
     save: string;
-    rename: string;
     delete: string;
-    namePrompt: string;
-    deleteConfirm: string;
+    disconnect: string;
+    deleteConfirm: (name: string) => string;
     fetchError: ({ err }: Err) => string;
     fetchListError: ({ err }: Err) => string;
     deleteError: ({ err }: Err) => string;
     renameError: ({ err }: Err) => string;
     createError: ({ err }: Err) => string;
     saveError: ({ err }: Err) => string;
+    loadToEmpty: string;
+    loadInclMapAndPosition: string;
+    savedMaps: string;
+    newMap: string;
+    SomeMap(props: { name: string }): JSX.Element;
+    unauthenticatedError: string;
   };
   legend: {
     body: () => JSX.Element;
@@ -753,5 +798,15 @@ export type Messages = {
     president: string;
     vicepresident: string;
     secretary: string;
+  };
+  mapCtxMenu: {
+    centerMap: string;
+    measurePosition: string;
+    addPoint: string;
+    startLine: string;
+    queryFeatures: string;
+    startRoute: string;
+    finishRoute: string;
+    showPhotos: string;
   };
 };

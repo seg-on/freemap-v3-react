@@ -13,27 +13,32 @@ import { createReducer } from 'typesafe-actions';
 
 export interface AuthState {
   chooseLoginMethod: boolean;
+  validated: boolean;
   user: User | null;
 }
 
-const initialState = {
+export const authInitialState: AuthState = {
   chooseLoginMethod: false,
+  validated: false,
   user: null,
 };
 
-export const authReducer = createReducer<AuthState, RootAction>(initialState)
+export const authReducer = createReducer<AuthState, RootAction>(
+  authInitialState,
+)
   .handleAction(authSetUser, (state, action) => ({
     ...state,
     user: action.payload && {
       name: action.payload.name,
       email: action.payload.email,
+      sendGalleryEmails: action.payload.sendGalleryEmails,
       id: action.payload.id,
       authToken: action.payload.authToken,
       isAdmin: action.payload.isAdmin,
-      notValidated: action.payload.notValidated,
     },
+    validated: true,
   }))
-  .handleAction(authLogout, (state) => ({ ...state, user: null }))
+  .handleAction(authLogout, () => authInitialState)
   .handleAction(authChooseLoginMethod, (state) => ({
     ...state,
     chooseLoginMethod: true,

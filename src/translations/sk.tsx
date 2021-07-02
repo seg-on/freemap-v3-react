@@ -1,13 +1,18 @@
 /* eslint-disable */
 
 import { ChangesetDetails } from 'fm3/components/ChangesetDetails';
-import { RoadDetails } from 'fm3/components/RoadDetails';
+import { CookieConsent } from 'fm3/components/CookieConsent';
+import {
+  ObjectDetailBasicProps,
+  ObjectDetails,
+} from 'fm3/components/ObjectDetails';
 import { TrackViewerDetails } from 'fm3/components/TrackViewerDetails';
 import { latLonToString } from 'fm3/geoutils';
 import { Fragment } from 'react';
 import Alert from 'react-bootstrap/Alert';
-import { FaFlask, FaKey } from 'react-icons/fa';
+import { FaKey } from 'react-icons/fa';
 import { Messages } from './messagesInterface';
+import shared from './sk-shared.json';
 
 const nf01 = Intl.NumberFormat('sk', {
   minimumFractionDigits: 0,
@@ -37,6 +42,8 @@ const getErrorMarkup = (ticketId?: string) => `<h1>Chyba aplikácie</h1>
   Ďakujeme.
 </p>`;
 
+const outdoorMap = 'Turistika, Cyklo, Bežky, Jazdenie';
+
 const sk: Messages = {
   general: {
     iso: 'sk_SK',
@@ -65,6 +72,7 @@ const sk: Messages = {
     minutes: 'minúty',
     meters: 'metre',
     createdAt: 'Vytvorené',
+    modifiedAt: 'Zmenené',
     actions: 'Akcie',
     add: 'Pridať nové',
     clear: 'Vyčistiť',
@@ -72,12 +80,19 @@ const sk: Messages = {
     simplifyPrompt:
       'Prosím zadajte faktor zjednodušenia. Zadajte nulu pre vynechanie zjednodušenia.',
     copyUrl: 'Kopírovať URL',
+    copyPageUrl: 'Kopírovať URL stránky',
     savingError: ({ err }) => `Chyba ukladania: ${err}`,
     loadError: ({ err }) => `Chyba načítania: ${err}`,
     deleteError: ({ err }) => `Chyba mazania: ${err}`,
+    operationError: ({ err }) => `Chyba operácie: ${err}`,
     deleted: 'Zmazané.',
     saved: 'Uložené.',
     visual: 'Zobrazenie',
+    copyOk: 'Skopírovane do schránky.',
+    noCookies: 'Táto funkcionalita vyžaduje prijatie súhlasu cookies.',
+    name: 'Názov',
+    load: 'Načítať',
+    unnamed: 'Bez názvu',
   },
 
   selections: {
@@ -86,6 +101,8 @@ const sk: Messages = {
     drawLines: 'Čiara',
     drawPolygons: 'Polygón',
     tracking: 'Sledovanie',
+    linePoint: 'Bod čiary',
+    polygonPoint: 'Bod polygónu',
   },
 
   tools: {
@@ -102,11 +119,7 @@ const sk: Messages = {
     changesets: 'Zmeny v mape',
     mapDetails: 'Detaily v mape',
     tracking: 'Sledovanie',
-    maps: (
-      <>
-        Moje mapy <FaFlask className="text-warning" />
-      </>
-    ),
+    maps: 'Moje mapy',
   },
 
   routePlanner: {
@@ -323,8 +336,8 @@ const sk: Messages = {
     imhdAttribution: 'trasy liniek MHD',
   },
 
-  more: {
-    more: 'Ďalšie',
+  mainMenu: {
+    title: 'Hlavné menu',
     logOut: (name) => `Odhlásiť ${name}`,
     logIn: 'Prihlásenie',
     settings: 'Nastavenia',
@@ -343,9 +356,12 @@ const sk: Messages = {
     github: 'Freemap na GitHub-e',
     automaticLanguage: 'Automaticky',
     pdfExport: 'Exportovať mapu',
+    osmWiki: 'Dokumentačný projekt OpenStreetMap',
+    wikiLink: 'https://wiki.openstreetmap.org/wiki/Sk:WikiProjekt_Slovensko',
   },
-
   main: {
+    title: shared.title,
+    description: shared.description,
     clearMap: 'Vyčistiť mapu',
     close: 'Zavrieť',
     closeTool: 'Zavrieť nástroj',
@@ -359,17 +375,32 @@ const sk: Messages = {
         prejdite na <a href="https://www.freemap.sk/">www.freemap.sk</a>.
       </div>
     ),
-    copyright: 'Licencia',
-    p2: () => (
-      <>
-        Podporiť prevádzku Freemapu môžete aj Vašimi 2% z dane. Bližšie
-        informácie a tlačivá nájdete na{' '}
-        <a href="https://github.com/FreemapSlovakia/freemap-operations/wiki/2%25-z-dan%C3%AD-pre-OZ-Freemap-Slovakia">
-          tejto stránke
-        </a>
-        .
-      </>
+    copyright: 'Licencia mapy',
+    cookieConsent: () => (
+      <CookieConsent
+        prompt="Niektoré funkcie môžu vyžadovať cookies. Prijať:"
+        local="Cookies lokálnych nastavení a prihlásenia pomocou sociálnych sietí"
+        analytics="Analytické cookies"
+      />
     ),
+    // p2: () => {
+    //   return (
+    //     <>
+    //       Podporiť prevádzku Freemapu môžete aj Vašimi{' '}
+    //       <a
+    //         href="/?tip=dvePercenta"
+    //         onClick={(e) => {
+    //           e.preventDefault();
+
+    //           dispatch(tipsShow('dvePercenta'));
+    //         }}
+    //       >
+    //         2% z dane
+    //       </a>
+    //       .
+    //     </>
+    //   );
+    // },
   },
 
   gallery: {
@@ -384,6 +415,16 @@ const sk: Messages = {
       lastCaptured: 'od najnovšie odfotenej',
       leastRated: 'od najnižšieho hodnotenia',
       mostRated: 'od najvyššieho hodnotenia',
+      lastComment: 'od posledného komentára',
+    },
+    colorizeBy: 'Vyfarbiť podľa',
+    c: {
+      disable: 'nevyfarbiť',
+      mine: 'odlíšiť moje',
+      author: 'autora',
+      rating: 'hodnotenia',
+      takenAt: 'dátumu odfotenia',
+      createdAt: 'dátumu nahrania',
     },
     viewer: {
       title: 'Fotografia',
@@ -461,6 +502,7 @@ const sk: Messages = {
       rating: 'Hodnotenie',
       noTags: 'bez tagov',
     },
+    noPicturesFound: 'Na tomto mieste neboli nájdené žiadne fotky.',
   },
 
   measurement: {
@@ -528,7 +570,8 @@ const sk: Messages = {
       title: 'Nahrať trasu',
       drop: 'Potiahnite sem .gpx súbor alebo kliknite sem pre jeho výber.',
     },
-    shareToast: 'Trasa bola uložená na server a môžete ju zdieľať.',
+    shareToast:
+      'Trasa bola uložená na server a môžete ju zdieľať skopirovaním URL stránky.',
     fetchingError: ({ err }) =>
       `Nastala chyba pri získavaní záznamu trasy: ${err}`,
     savingError: ({ err }) => `Nepodarilo sa uložiť trasu: ${err}`,
@@ -546,6 +589,11 @@ const sk: Messages = {
       label: 'Popis:',
       hint: 'Ak chcete popis odstrániť, nechajte pole popisu prázdne.',
     },
+    continue: 'Pokračovať',
+    join: 'Spojiť',
+    split: 'Rozdeliť',
+    stopDrawing: 'Ukončiť kreslenie',
+    selectPointToJoin: 'Zvoľte bod pre spojenie čiar',
   },
 
   settings: {
@@ -567,6 +615,16 @@ const sk: Messages = {
       name: 'Meno',
       email: 'E-Mail',
       noAuthInfo: 'Dostupné iba pre prihlásených používateľov.',
+      sendGalleryEmails: 'Upozorni emailom na komentáre k fotke',
+      DeleteInfo: () => (
+        <>
+          Ak si prajete zmazať svoj účet, kontaktujte nás prosím na{' '}
+          <Alert.Link href="mailto:freemap@freemap.sk">
+            freemap@freemap.sk
+          </Alert.Link>
+          .
+        </>
+      ),
     },
     general: {
       tips: 'Zobrazovať tipy po otvorení stránky',
@@ -587,8 +645,7 @@ const sk: Messages = {
       trackViewerEleSmoothing: {
         label: (value) =>
           `Úroveň vyhladzovania pri výpočte celkovej nastúpanej/naklesanej nadmorskej výšky v prehliadači trás: ${value}`,
-        info:
-          'Pri hodnote 1 sa berú do úvahy všetky nadmorské výšky samostatne. Vyššie hodnoty zodpovedajú šírke plávajúceho okna, ktorým sa vyhladzujú nadmorské výšky.',
+        info: 'Pri hodnote 1 sa berú do úvahy všetky nadmorské výšky samostatne. Vyššie hodnoty zodpovedajú šírke plávajúceho okna, ktorým sa vyhladzujú nadmorské výšky.',
       },
     },
     saveSuccess: 'Zmeny boli uložené.',
@@ -618,11 +675,17 @@ const sk: Messages = {
   },
 
   mapDetails: {
-    road: 'Info o ceste',
     notFound: 'Nebola nájdená žiadna cesta.',
     fetchingError: ({ err }) =>
       `Nastala chyba pri získavaní detailov o ceste: ${err}`,
-    detail: ({ element }) => <RoadDetails way={element} />,
+    detail: (props: ObjectDetailBasicProps) => (
+      <ObjectDetails
+        {...props}
+        openText="Otvoriť na OpenStreetMap.org"
+        historyText="história"
+        editInJosmText="Editovať v JOSM"
+      />
+    ),
   },
 
   objects: {
@@ -1033,7 +1096,7 @@ const sk: Messages = {
       p: 'OpenTopoMap',
       d: 'Verejná doprava (ÖPNV)',
       h: 'Historická',
-      X: 'Turistika + Cyklo + Bežky',
+      X: outdoorMap,
       i: 'Interaktívna vrstva',
       I: 'Fotografie',
       l: 'Lesné cesty NLC (SK)',
@@ -1051,6 +1114,8 @@ const sk: Messages = {
       s3: 'Strava (Vodné aktivity)',
       s4: 'Strava (Zimné aktivity)',
       w: 'Wikipedia',
+      '4': 'Svetlé tieňovanie DMR 5.0',
+      '5': 'Sivé tieňovanie DMR 5.0',
     },
     type: {
       map: 'mapa',
@@ -1146,8 +1211,7 @@ const sk: Messages = {
     trackedDevices: {
       button: 'Sledované zariadenia',
       modalTitle: 'Sledované zariadenia',
-      desc:
-        'Tu môžete spravovať sledované zariadenia, aby ste videli pozíciu svojich priateľov.',
+      desc: 'Tu môžete spravovať sledované zariadenia, aby ste videli pozíciu svojich priateľov.',
       modifyTitle: (name) => (
         <>
           Upraviť sledované zariadenie <i>{name}</i>
@@ -1158,6 +1222,8 @@ const sk: Messages = {
           Sledovať zariadenie <i>{name}</i>
         </>
       ),
+      storageWarning:
+        'Pozor, zoznam zariadení je premietnutý len do URL stránky. Ak si ho prajete uložiť, využite funkciu "Moje mapy".',
     },
     accessToken: {
       token: 'Token sledovania',
@@ -1174,10 +1240,10 @@ const sk: Messages = {
         </>
       ),
       desc: (deviceName) => (
-        <p>
+        <>
           Zadefinujte tokeny sledovania, aby ste mohli zdieľať pozíciu vášho
           zariadenia <i>{deviceName}</i> s vašimi priateľmi.
-        </p>
+        </>
       ),
       createTitle: (deviceName) => (
         <>
@@ -1350,7 +1416,9 @@ const sk: Messages = {
       <>
         Upozornenia:
         <ul>
-          <li>Exportuje sa nová outdoorová mapa.</li>
+          <li>
+            Exportuje sa mapa <i>{outdoorMap}</i>.
+          </li>
           <li>Export mapy môže trvať aj desiatky sekúnd.</li>
           <li>
             Pri publikovaní mapy je nutné uviesť jej licenciu:
@@ -1388,25 +1456,45 @@ const sk: Messages = {
   },
 
   maps: {
-    noMap: 'Žiadna mapa',
-    create: 'Uložiť ako…',
+    noMapFound: 'Žiadna mapa nenájdena',
     save: 'Uložiť',
-    rename: 'Premenovať',
     delete: 'Zmazať',
-    namePrompt: 'Názov mapy:',
-    deleteConfirm: 'Naozaj si prajete vymazať túto mapu?',
+    disconnect: 'Odpojiť',
+    deleteConfirm: (name) => `Naozaj si prajete vymazať mapu ${name}?`,
     fetchError: ({ err }) => `Nastala chyba pri načítavaní mapy: ${err}`,
     fetchListError: ({ err }) => `Nastala chyba pri načítavaní máp: ${err}`,
     deleteError: ({ err }) => `Nastala chyba pri mazaní mapy: ${err}`,
     renameError: ({ err }) => `Nastala chyba pri premenovávaní mapy: ${err}`,
     createError: ({ err }) => `Nastala chyba pri ukladaní mapy: ${err}`,
     saveError: ({ err }) => `Nastala chyba pri ukladaní mapy: ${err}`,
+    loadToEmpty: 'Načítať do čistej mapy',
+    loadInclMapAndPosition:
+      'Načítať vrátane uloženej podkladovej mapy a jej pozície',
+    savedMaps: 'Uložené mapy',
+    newMap: 'Nová mapa',
+    SomeMap: ({ name }) => (
+      <>
+        Mapa <i>{name}</i>
+      </>
+    ),
+    unauthenticatedError: 'Pre funkciu Moje mapy musíte byť prihlásený.',
+  },
+
+  mapCtxMenu: {
+    centerMap: 'Vycentrovať mapu',
+    measurePosition: 'Odmerať pozíciu',
+    addPoint: 'Pridať bod',
+    startLine: 'Začať čiaru',
+    queryFeatures: 'Zistiť detaily',
+    startRoute: 'Začať trasu',
+    finishRoute: 'Ukončiť trasu',
+    showPhotos: 'Ukázať fotky',
   },
 
   legend: {
     body: () => (
       <>
-        Legenda k mape <i>Turistika + Cyklo + Bežky</i>:
+        Legenda k mape <i>{outdoorMap}</i>:
       </>
     ),
   },

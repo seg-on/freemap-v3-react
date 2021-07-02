@@ -1,8 +1,8 @@
 import { setActiveModal } from 'fm3/actions/mainActions';
 import { toastsAdd } from 'fm3/actions/toastsActions';
 import { trackingActions } from 'fm3/actions/trackingActions';
+import { copyToClipboard } from 'fm3/clipboardUtils';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import { AccessToken as AccessTokenType } from 'fm3/types/trackingTypes';
 import { ReactElement, useCallback } from 'react';
 import Button from 'react-bootstrap/Button';
@@ -21,7 +21,7 @@ export function AccessToken({ accessToken }: Props): ReactElement {
 
   const dispatch = useDispatch();
 
-  const language = useSelector((state: RootState) => state.l10n.language);
+  const language = useSelector((state) => state.l10n.language);
 
   const dateFormat = new Intl.DateTimeFormat(language, {
     year: 'numeric',
@@ -59,12 +59,13 @@ export function AccessToken({ accessToken }: Props): ReactElement {
   }, [accessToken.id, dispatch]);
 
   const handleCopyClick = useCallback(() => {
-    navigator.clipboard.writeText(
+    copyToClipboard(
+      dispatch,
       `${location.origin}/?track=${encodeURIComponent(
         accessToken.token,
       )}&follow=${encodeURIComponent(accessToken.token)}`,
     );
-  }, [accessToken.token]);
+  }, [accessToken.token, dispatch]);
 
   const handleView = useCallback(() => {
     dispatch(setActiveModal('tracking-watched'));

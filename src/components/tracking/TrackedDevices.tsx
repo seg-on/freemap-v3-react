@@ -1,8 +1,8 @@
 import { setActiveModal } from 'fm3/actions/mainActions';
 import { trackingActions } from 'fm3/actions/trackingActions';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import { ReactElement } from 'react';
+import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
@@ -15,9 +15,7 @@ export function TrackedDevices(): ReactElement {
 
   const dispatch = useDispatch();
 
-  const devices = useSelector(
-    (state: RootState) => state.tracking.trackedDevices,
-  );
+  const devices = useSelector((state) => state.tracking.trackedDevices);
 
   return (
     <>
@@ -28,6 +26,9 @@ export function TrackedDevices(): ReactElement {
       </Modal.Header>
       <Modal.Body>
         <p>{m?.tracking.trackedDevices.desc}</p>
+        <Alert variant="warning">
+          {m?.tracking.trackedDevices.storageWarning}
+        </Alert>
         <Table striped bordered responsive>
           <thead>
             <tr>
@@ -43,7 +44,7 @@ export function TrackedDevices(): ReactElement {
           </thead>
           <tbody>
             {devices.map((device) => (
-              <TrackedDevice key={device.id} device={device} />
+              <TrackedDevice key={device.token} device={device} />
             ))}
           </tbody>
         </Table>

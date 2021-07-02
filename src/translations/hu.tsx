@@ -1,12 +1,17 @@
 /* eslint-disable */
 
 import { ChangesetDetails } from 'fm3/components/ChangesetDetails';
-import { RoadDetails } from 'fm3/components/RoadDetails';
+import { CookieConsent } from 'fm3/components/CookieConsent';
+import {
+  ObjectDetailBasicProps,
+  ObjectDetails,
+} from 'fm3/components/ObjectDetails';
 import { TrackViewerDetails } from 'fm3/components/TrackViewerDetails';
 import { latLonToString } from 'fm3/geoutils';
 import { Fragment } from 'react';
 import Alert from 'react-bootstrap/Alert';
-import { FaFlask, FaKey } from 'react-icons/fa';
+import { FaKey } from 'react-icons/fa';
+import shared from './hu-shared.json';
 import { Messages } from './messagesInterface';
 
 const nf01 = Intl.NumberFormat('hu', {
@@ -36,6 +41,8 @@ const getErrorMarkup = (ticketId?: string) => `
   Köszönjük!
 </p>`;
 
+const outdoorMap = 'Túrázás, Kerékpár, Síelés, Lovaglás';
+
 const hu: Messages = {
   general: {
     iso: 'hu_HU',
@@ -64,7 +71,8 @@ const hu: Messages = {
     seconds: 'másodperc',
     minutes: 'perc',
     meters: 'méter',
-    createdAt: 'Létrehozva:',
+    createdAt: 'Létrehozva',
+    modifiedAt: 'Modified At', // TODO translate
     actions: 'Műveletek',
     add: 'Új hozzáadása',
     clear: 'Törlés',
@@ -72,12 +80,19 @@ const hu: Messages = {
     simplifyPrompt:
       'Adja meg az egyszerűsítés mértékét. Az egyszerűsítés mellőzéséhez írjon be nullát.',
     copyUrl: 'URL másolása',
+    copyPageUrl: 'URL másolása', // TODO update
     savingError: ({ err }) => `Mentési hiba: ${err}`,
     loadError: ({ err }) => `Betöltési hiba: ${err}`,
     deleteError: ({ err }) => `Törlési hiba: ${err}`,
+    operationError: ({ err }) => `Operation error: ${err}`, // TODO translate
     deleted: 'Törölve.',
     saved: 'Elmentve.',
     visual: 'Megjelenítés',
+    copyOk: 'Copied to clipboard.', // TODO translate
+    noCookies: 'This functionality requires accepting the cookies consent.', // TODO translate
+    name: 'Name', // TODO translate
+    load: 'Load', // TODO translate
+    unnamed: 'No name', // TODO translate
   },
 
   selections: {
@@ -86,6 +101,8 @@ const hu: Messages = {
     drawLines: 'Vonal',
     drawPolygons: 'Sokszög',
     tracking: 'Követés',
+    linePoint: 'Line point', // TODO translate
+    polygonPoint: 'Polygon point', // TODO translate
   },
 
   tools: {
@@ -102,11 +119,7 @@ const hu: Messages = {
     changesets: 'Térkép változásai',
     mapDetails: 'Térképadatok',
     tracking: 'Élő követés',
-    maps: (
-      <>
-        Saját térképeim <FaFlask className="text-warning" />
-      </>
-    ),
+    maps: 'Saját térképeim',
   },
 
   routePlanner: {
@@ -321,8 +334,8 @@ const hu: Messages = {
     imhdAttribution: 'tömegközlekedési útvonalak',
   },
 
-  more: {
-    more: 'Továbbiak',
+  mainMenu: {
+    title: 'Main menu', // TODO translate
     logOut: (name) => `Kijelentkezés: ${name}`,
     logIn: 'Bejelentkezés',
     settings: 'Beállítások',
@@ -341,9 +354,13 @@ const hu: Messages = {
     github: 'Freemap a GitHubon',
     automaticLanguage: 'Automatikus',
     pdfExport: 'Térkép exportálása',
+    osmWiki: 'OpenStreetMap documentation', // TODO translate
+    wikiLink: 'https://wiki.openstreetmap.org/wiki/Hu:Main_Page',
   },
 
   main: {
+    title: shared.title,
+    description: shared.description,
     clearMap: 'Térképelemek törlése',
     close: 'Bezárás',
     closeTool: 'Eszköz bezárása',
@@ -358,6 +375,14 @@ const hu: Messages = {
       </div>
     ),
     copyright: 'Szerzői jog',
+    // TODO translate
+    cookieConsent: () => (
+      <CookieConsent
+        prompt="Some features may require cookies. Accept:"
+        local="Cookies of local settings and login via social networks"
+        analytics="Analytics cookies"
+      />
+    ),
   },
 
   gallery: {
@@ -372,6 +397,16 @@ const hu: Messages = {
       lastCaptured: 'a legutóbb készülttől',
       leastRated: 'a leggyöngébbre értékelttől',
       mostRated: 'a legjobbra értékelttől',
+      lastComment: 'from last comment',
+    },
+    colorizeBy: 'Colorize by', // TODO translate
+    c: {
+      disable: "don't colorize", // TODO translate
+      mine: 'differ mine', // TODO translate
+      author: 'author', // TODO translate
+      rating: 'rating', // TODO translate
+      takenAt: 'taken date', // TODO translate
+      createdAt: 'upload date', // TODO translate
     },
     viewer: {
       title: 'Fénykép',
@@ -450,6 +485,7 @@ const hu: Messages = {
       rating: 'Értékelés',
       noTags: 'nincs címke',
     },
+    noPicturesFound: 'There were no photos found on this place.', // TODO translate
   },
 
   measurement: {
@@ -517,7 +553,7 @@ const hu: Messages = {
       title: 'A nyomvonal feltöltése',
       drop: 'Húzza ide a .gpx fájlt vagy kattintson ide a kijelöléséhez.',
     },
-    shareToast: 'Az útvonal elmentődött a kiszolgálóra, és megosztható.',
+    shareToast: 'Az útvonal elmentődött a kiszolgálóra, és megosztható.', // TODO update translation
     fetchingError: ({ err }) =>
       `Hiba történt a nyomvonal adatainak beolvasásakor: ${err}`,
     savingError: ({ err }) => `Hiba történt a nyomvonal mentésekor: ${err}`,
@@ -535,6 +571,11 @@ const hu: Messages = {
       label: 'Felirat:',
       hint: 'Felirat eltávolításához hagyja üresen ezt a mezőt.',
     },
+    continue: 'Continue', // TODO translate
+    join: 'Join', // TODO translate
+    split: 'Split', // TODO translate
+    stopDrawing: 'Stop drawing', // TODO translate
+    selectPointToJoin: 'Select point to join lines', // TODO translate
   },
 
   settings: {
@@ -556,10 +597,20 @@ const hu: Messages = {
       name: 'Név',
       email: 'E-mail',
       noAuthInfo: 'Csak bejelentkezett felhasználóknak.',
+      sendGalleryEmails: 'Notify photo comments via email', // TODO translate
+      DeleteInfo: () => (
+        // TODO translate
+        <>
+          If you wish to delete your account, please contact us at{' '}
+          <Alert.Link href="mailto:freemap@freemap.sk">
+            freemap@freemap.sk
+          </Alert.Link>
+          .
+        </>
+      ),
     },
     general: {
-      tips:
-        'Megnyitáskor jelenjenek meg tippek (csak szolvák és cseh nyelvnél)',
+      tips: 'Megnyitáskor jelenjenek meg tippek (csak szolvák és cseh nyelvnél)',
     },
     expertInfo: `
       <div style="text-align: left">
@@ -577,8 +628,7 @@ const hu: Messages = {
       trackViewerEleSmoothing: {
         label: (value) =>
           `A simítás szintje a teljes emelkedés/lejtés kiszámításánál a nyomvonal-megtekintőben: ${value}`,
-        info:
-          '1 értéknél minden magasság egyenként figyelembe vétetik. A nagyobb értékek a magasságok elsimítására szolgáló lebegő ablakszélességet jelentenek.',
+        info: '1 értéknél minden magasság egyenként figyelembe vétetik. A nagyobb értékek a magasságok elsimítására szolgáló lebegő ablakszélességet jelentenek.',
       },
     },
     saveSuccess: 'A beállítások el lettek mentve.',
@@ -608,11 +658,17 @@ const hu: Messages = {
   },
 
   mapDetails: {
-    road: 'Út adatai',
     notFound: 'Itt nincs út.',
     fetchingError: ({ err }) =>
       `Hiba történt az út adatainak beolvasásakor: ${err}`,
-    detail: ({ element }) => <RoadDetails way={element} />,
+    detail: (props: ObjectDetailBasicProps) => (
+      <ObjectDetails
+        {...props}
+        openText="Open at OpenStreetMap.org" // TODO translate
+        historyText="history" // TODO translate
+        editInJosmText="Edit in JOSM" // TODO translate
+      />
+    ),
   },
 
   objects: {
@@ -995,7 +1051,8 @@ const hu: Messages = {
       google: 'Belépés Google-fiókkal',
       osm: 'Belépés OpenStreetMap-fiókkal',
     },
-    enablePopup: 'Kérjük, engedélyezze a böngészőben az előugró ablakokat ehhez a webhelyhez.',
+    enablePopup:
+      'Kérjük, engedélyezze a böngészőben az előugró ablakokat ehhez a webhelyhez.',
     success: 'Sikeresen bejelentkezett.',
     logInError: ({ err }) => `Hiba történt a bejelentkezésnél: ${err}`,
     logInError2: 'Hiba történt a bejelentkezésnél.',
@@ -1024,7 +1081,7 @@ const hu: Messages = {
       p: 'OpenTopoMap',
       d: 'Tömegközlekedés',
       h: 'Történelmi térkép',
-      X: 'Túrázás + Kerékpár + Síelés',
+      X: outdoorMap,
       i: 'Interaktív réteg',
       I: 'Fényképek',
       l: 'Erdészeti utak (Szlovákia)',
@@ -1042,6 +1099,8 @@ const hu: Messages = {
       s3: 'Strava (vízi tevékenységek)',
       s4: 'Strava (téli tevékenységek)',
       w: 'Wikipedia',
+      '4': 'Light Hillshading DMR 5.0', // TODO translate
+      '5': 'Gray Hillshading DMR 5.0', // TODO translate
     },
     type: {
       map: 'térkép',
@@ -1150,6 +1209,8 @@ const hu: Messages = {
           <i>{name}</i> készülék figyelése
         </>
       ),
+      storageWarning:
+        'Please note that the list of devices is only reflected in the page URL. If you want to save it, use the "My Maps" function.', // TODO translate
     },
     accessToken: {
       token: 'Figyelőkód',
@@ -1166,10 +1227,10 @@ const hu: Messages = {
         </>
       ),
       desc: (deviceName) => (
-        <p>
+        <>
           Határozzon meg figyelőkódokat, hogy <i>{deviceName}</i> készüléke
           pozícióját megoszthassa ismerőseivel.
-        </p>
+        </>
       ),
       createTitle: (deviceName) => (
         <>
@@ -1211,8 +1272,7 @@ const hu: Messages = {
         <>
           <p>
             Kezelje készülékeit, hogy mások is láthassák pozícióját, ha megad
-            nekik egy figyelőkódot (amelyet a <FaKey /> ikonnal hozhat
-            létre).
+            nekik egy figyelőkódot (amelyet a <FaKey /> ikonnal hozhat létre).
           </p>
           <hr />
           <p>
@@ -1273,7 +1333,8 @@ const hu: Messages = {
           </ul>
           <hr />
           <p>
-            TK102B GPS tracker nyomvonalrögzítő készülék esetén a következőre állítsa be a címét: {' '}
+            TK102B GPS tracker nyomvonalrögzítő készülék esetén a következőre
+            állítsa be a címét:{' '}
             <code>
               {process.env['API_URL']
                 ?.replace(/https?:\/\//, '')
@@ -1343,7 +1404,9 @@ const hu: Messages = {
       <>
         Megjegyzések:
         <ul>
-          <li>A új szabadtéri térkép fog exportáltatni.</li>
+          <li>
+            A <i>{outdoorMap}</i> fog exportáltatni.
+          </li>
           <li>A térkép exportálása több tucat másodpercet is igénybe vehet.</li>
           <li>
             Megosztás előtt a térképet lássa el a következő szerzői jogi
@@ -1382,32 +1445,54 @@ const hu: Messages = {
   },
 
   maps: {
-    noMap: 'Nincs térkép',
-    create: 'Mentés másként…',
+    noMapFound: 'Nincs térkép', // TODO No map found
     save: 'Mentés',
-    rename: 'Átnevezés',
     delete: 'Törlés',
-    namePrompt: 'Térkép neve:',
-    deleteConfirm: 'Biztosan törli ezt a térképet?',
+    disconnect: 'Disconnect', // TODO translate
+    deleteConfirm: (name) => `Biztosan törli ezt a térképet? ${name}`, // TODO translate
     fetchError: ({ err }) => `Hiba történt a térkép betöltéskor: ${err}`,
     fetchListError: ({ err }) => `Hiba történt a térképek betöltéskor: ${err}`,
     deleteError: ({ err }) => `Hiba történt a térkép törlésekor: ${err}`,
     renameError: ({ err }) => `Hiba történt a térkép átnevezésekor: ${err}`,
     createError: ({ err }) => `Hiba történt a térkép mentésekor: ${err}`,
     saveError: ({ err }) => `Hiba történt a térkép mentésekor: ${err}`,
+    loadToEmpty: 'Load to empty map',
+    loadInclMapAndPosition:
+      'Load including saved background map and its position',
+    savedMaps: 'Saved maps',
+    newMap: 'New map',
+    SomeMap: ({ name }) => (
+      <>
+        Map <i>{name}</i>
+      </>
+    ),
+    unauthenticatedError: 'Please log-in to access My maps functionality.', // TODO translate
+  },
+
+  // TODO translate
+  mapCtxMenu: {
+    centerMap: 'Center map',
+    measurePosition: 'Measure position',
+    addPoint: 'Add point',
+    startLine: 'Start line',
+    queryFeatures: 'Query features',
+    startRoute: 'Start route',
+    finishRoute: 'Finish route',
+    showPhotos: 'Show photos',
   },
 
   legend: {
     body: () => (
       <>
-        Jelmagyarázat: <i>Túrázás + Kerékpározás + Síelés</i>:
+        Jelmagyarázat: <i>{outdoorMap}</i>:
       </>
     ),
   },
 
   contacts: {
     ngo: 'Önkéntes egyesület',
-    registered: 'Nyilvántartásba véve 2009. október 2-án, MV/VVS/1-900/90-34343 számmal',
+    registered:
+      'Nyilvántartásba véve 2009. október 2-án, MV/VVS/1-900/90-34343 számmal',
     bankAccount: 'Bankszámlaszám',
     generalContact: 'Általános elérhetőség',
     board: 'Elnökség',
@@ -1423,3 +1508,26 @@ function numberize(n: number, words: [string, string]) {
 }
 
 export default hu;
+
+/*
+// TODO translate elsewhere in the code:
+
+English: Freemap Photos
+Translation: ...
+
+English: Photo comment at ${webUrl}
+Hungarian: ...
+
+English: User ${ctx.state.user.name} commented ${own ? 'your' : 'a'} photo ${picTitle} at ${picUrl}:
+Hungarian: ...
+
+English: If you no longer wish to be notified about photo comments, configure it at ${unsubscribeUrl} in the Account tab.
+Hungarian: ...
+
+English: You are offline.
+Hungarian: ...
+
+English: Please go online to use Freemap application.
+Hungarian: ...
+
+*/

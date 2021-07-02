@@ -17,8 +17,9 @@ import {
   FaTree,
   FaWikipediaW,
 } from 'react-icons/fa';
-import { GiPathDistance } from 'react-icons/gi';
+import { GiHills, GiPathDistance } from 'react-icons/gi';
 import { SiOpenstreetmap } from 'react-icons/si';
+import black1x1 from './images/1x1-black.png';
 import transparent1x1 from './images/1x1-transparent.png';
 import white1x1 from './images/1x1-white.png';
 
@@ -76,6 +77,8 @@ export const baseLayerLetters = [
   'd',
   'h',
   'X',
+  '4',
+  '5',
 ] as const;
 
 export const overlayLetters = [
@@ -155,9 +158,7 @@ export const baseLayers: BaseLayerDef[] = [
   {
     type: 'X',
     icon: <FaTree />,
-    url: `${
-      process.env['FM_MAPSERVER_URL'] || 'https://outdoor.tiles.freemap.sk'
-    }/{z}/{x}/{y}`,
+    url: `${process.env['FM_MAPSERVER_URL']}/{z}/{x}/{y}`,
     extraScales: [2, 3],
     attribution: [
       FM_ATTR,
@@ -190,8 +191,7 @@ export const baseLayers: BaseLayerDef[] = [
   },
   {
     type: 'S',
-    url:
-      'https://{s}.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    url: 'https://{s}.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     subdomains: ['server', 'services'],
     icon: <FaPlane />,
     minZoom: 0,
@@ -290,6 +290,44 @@ export const baseLayers: BaseLayerDef[] = [
     attribution: [],
     key: ['Digit9', true],
   },
+  {
+    type: '4',
+    url: 'https://dmr5-light-shading.tiles.freemap.sk/{z}/{x}/{y}.jpg',
+    minNativeZoom: 0,
+    maxNativeZoom: isHdpi ? 17 : 18,
+    icon: <GiHills />,
+    attribution: [
+      {
+        type: 'data',
+        name: 'LLS: ÚGKK SR',
+        url: 'https://www.geoportal.sk/sk/udaje/lls-dmr/',
+      },
+    ],
+    key: ['Digit4', false],
+    errorTileUrl: white1x1,
+    tileSize: isHdpi ? 128 : 256,
+    zoomOffset: isHdpi ? 1 : 0,
+    showOnlyInExpertMode: true,
+  },
+  {
+    type: '5',
+    url: 'https://dmr5-shading.tiles.freemap.sk/{z}/{x}/{y}.jpg',
+    minNativeZoom: 0,
+    maxNativeZoom: isHdpi ? 16 : 17,
+    icon: <GiHills />,
+    attribution: [
+      {
+        type: 'data',
+        name: 'LLS: ÚGKK SR',
+        url: 'https://www.geoportal.sk/sk/udaje/lls-dmr/',
+      },
+    ],
+    key: ['Digit5', false],
+    errorTileUrl: black1x1,
+    tileSize: isHdpi ? 128 : 256,
+    zoomOffset: isHdpi ? 1 : 0,
+    showOnlyInExpertMode: true,
+  },
 ];
 
 export const overlayLayers: OverlayLayerDef[] = [
@@ -334,13 +372,15 @@ export const overlayLayers: OverlayLayerDef[] = [
     errorTileUrl: transparent1x1,
     // adminOnly: true,
   },
-  ...([
-    ['s0', 'both'],
-    ['s1', 'ride'],
-    ['s2', 'run'],
-    ['s3', 'water'],
-    ['s4', 'winter'],
-  ] as const).map(([type, stravaType]) => ({
+  ...(
+    [
+      ['s0', 'both'],
+      ['s1', 'ride'],
+      ['s2', 'run'],
+      ['s3', 'water'],
+      ['s4', 'winter'],
+    ] as const
+  ).map(([type, stravaType]) => ({
     type,
     icon: <FaStrava />,
     url: `//strava-heatmap.tiles.freemap.sk/${stravaType}/bluered/{z}/{x}/{y}.png?px=${
@@ -407,11 +447,13 @@ export const overlayLayers: OverlayLayerDef[] = [
     showOnlyInExpertMode: true,
     zIndex: 3,
   },
-  ...([
-    ['n1', ['Digit1', false], ''],
-    ['n2', ['Digit2', false], 'h'],
-    ['n3', ['Digit3', false], 'c'],
-  ] as const).map(([type, key, suffix]) => ({
+  ...(
+    [
+      ['n1', ['Digit1', false], ''],
+      ['n2', ['Digit2', false], 'h'],
+      ['n3', ['Digit3', false], 'c'],
+    ] as const
+  ).map(([type, key, suffix]) => ({
     type,
     icon: <FaFont />,
     url: `//tiles.freemap.sk/names${suffix}/{z}/{x}/{y}.png`,

@@ -1,9 +1,10 @@
 import { RootAction } from 'fm3/actions';
 import { authSetUser } from 'fm3/actions/authActions';
 import { gallerySetFilter } from 'fm3/actions/galleryActions';
-import { Selection, setAppState } from 'fm3/actions/mainActions';
+import { Selection } from 'fm3/actions/mainActions';
 import {
   mapRefocus,
+  mapSetLeafletReady,
   mapSetOverlayOpacity,
   mapSetOverlayPaneOpacity,
   MapStateBase,
@@ -15,9 +16,10 @@ export interface MapState extends MapStateBase {
   selection: Selection | null;
   removeGalleryOverlayOnGalleryToolQuit: boolean;
   gpsTracked: boolean;
+  mapLeafletReady: boolean;
 }
 
-const initialState: MapState = {
+export const mapInitialState: MapState = {
   mapType: 'X',
   lat: 48.70714,
   lon: 19.4995,
@@ -28,12 +30,10 @@ const initialState: MapState = {
   selection: null,
   removeGalleryOverlayOnGalleryToolQuit: false,
   gpsTracked: false,
+  mapLeafletReady: false,
 };
 
-export const mapReducer = createReducer<MapState, RootAction>(initialState)
-  .handleAction(setAppState, (state, action) => {
-    return { ...state, ...action.payload.map };
-  })
+export const mapReducer = createReducer<MapState, RootAction>(mapInitialState)
   .handleAction(mapSetOverlayOpacity, (state, action) => ({
     ...state,
     overlayOpacity: action.payload,
@@ -101,6 +101,10 @@ export const mapReducer = createReducer<MapState, RootAction>(initialState)
         }
       : state;
   })
+  .handleAction(mapSetLeafletReady, (state, { payload }) => ({
+    ...state,
+    mapLeafletReady: payload,
+  }))
   .handleAction(mapsDataLoaded, (state, { payload: { map } }) => ({
     ...state,
     lat: map?.lat ?? state.lat,

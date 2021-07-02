@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { setActiveModal } from 'fm3/actions/mainActions';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import { ReactElement, useCallback, useEffect, useState } from 'react';
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
@@ -13,8 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 type Item = { name: string; items: { name: string; id: number }[] };
 
-const fmMapserverUrl =
-  process.env['FM_MAPSERVER_URL'] || 'https://outdoor.tiles.freemap.sk';
+const fmMapserverUrl = process.env['FM_MAPSERVER_URL'];
 
 type Props = { show: boolean };
 
@@ -23,7 +21,7 @@ export function LegendOutdoorModal({ show }: Props): ReactElement {
 
   const [legend, setLegend] = useState<Item[]>([]);
 
-  const language = useSelector((state: RootState) => state.l10n.language);
+  const language = useSelector((state) => state.l10n.language);
 
   useEffect(() => {
     axios
@@ -57,7 +55,7 @@ export function LegendOutdoorModal({ show }: Props): ReactElement {
     <Modal show={show} onHide={close}>
       <Modal.Header closeButton>
         <Modal.Title>
-          <FaRegMap /> {m?.more.mapLegend}
+          <FaRegMap /> {m?.mainMenu.mapLegend}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

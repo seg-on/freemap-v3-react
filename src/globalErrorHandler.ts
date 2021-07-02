@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { setErrorTicketId } from 'fm3/actions/mainActions';
-import { storage } from 'fm3/storage';
+import storage from 'local-storage-fallback';
 import { MyStore } from './storeCreator';
 
 let store: MyStore;
@@ -59,8 +59,10 @@ export function sendError(errDetails: ErrorDetails): void {
 
   const state = store?.getState();
 
-  // TODO window.ga was null
-  window.ga?.('send', 'event', 'Error', 'error', errDetails.kind);
+  window.gtag?.('event', 'error', {
+    event_category: 'Error',
+    value: errDetails.kind,
+  });
 
   axios
     .post(

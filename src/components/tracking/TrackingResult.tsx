@@ -6,7 +6,6 @@ import {
 } from 'fm3/components/tracking/TrackingPoint';
 import { distance, toLatLng, toLatLngArr } from 'fm3/geoutils';
 import { selectingModeSelector } from 'fm3/selectors/mainSelectors';
-import { RootState } from 'fm3/storeCreator';
 import { TrackPoint } from 'fm3/types/trackingTypes';
 import { Fragment, ReactElement, useMemo, useRef, useState } from 'react';
 import { FaRegUser, FaUser } from 'react-icons/fa';
@@ -19,30 +18,26 @@ export function TrackingResult(): ReactElement {
 
   const dispatch = useDispatch();
 
-  const language = useSelector((state: RootState) => state.l10n.language);
+  const language = useSelector((state) => state.l10n.language);
 
-  const showLine = useSelector((state: RootState) => state.tracking.showLine);
+  const showLine = useSelector((state) => state.tracking.showLine);
 
-  const showPoints = useSelector(
-    (state: RootState) => state.tracking.showPoints,
-  );
+  const showPoints = useSelector((state) => state.tracking.showPoints);
 
-  const trackedDevices = useSelector(
-    (state: RootState) => state.tracking.trackedDevices,
-  );
+  const trackedDevices = useSelector((state) => state.tracking.trackedDevices);
 
-  const tracks = useSelector((state: RootState) => state.tracking.tracks);
+  const tracks = useSelector((state) => state.tracking.tracks);
 
   const tracks1 = useMemo(() => {
-    const tdMap = new Map(trackedDevices.map((td) => [td.id, td]));
+    const tdMap = new Map(trackedDevices.map((td) => [td.token, td]));
 
     return tracks.map((track) => ({
       ...track,
-      ...(tdMap.get(track.id) || {}),
+      ...tdMap.get(track.token),
     }));
   }, [trackedDevices, tracks]);
 
-  const activeTrackId = useSelector((state: RootState) =>
+  const activeTrackId = useSelector((state) =>
     state.main.selection?.type === 'tracking'
       ? state.main.selection?.id
       : undefined,
@@ -75,14 +70,14 @@ export function TrackingResult(): ReactElement {
         const color = track.color || '#7239a8';
         const width = track.width || 4;
 
-        let handleClick = clickHandlerMemo.current[track.id];
+        let handleClick = clickHandlerMemo.current[track.token];
 
         if (!handleClick) {
           handleClick = () => {
-            dispatch(selectFeature({ type: 'tracking', id: track.id }));
+            dispatch(selectFeature({ type: 'tracking', id: track.token }));
           };
 
-          clickHandlerMemo.current[track.id] = handleClick;
+          clickHandlerMemo.current[track.token] = handleClick;
         }
 
         const segments: TrackPoint[][] = [];
@@ -119,7 +114,7 @@ export function TrackingResult(): ReactElement {
             : null;
 
         return (
-          <Fragment key={`trk-${track.id}`}>
+          <Fragment key={`trk-${track.token}`}>
             {lastPoint && typeof lastPoint.accuracy === 'number' && (
               <Circle
                 weight={2}
@@ -172,7 +167,7 @@ export function TrackingResult(): ReactElement {
                     click: handleClick,
                   }}
                   faIcon={
-                    track.id === activeTrackId ? (
+                    track.token === activeTrackId ? (
                       <FaUser color={color} />
                     ) : (
                       <FaRegUser color={color} />

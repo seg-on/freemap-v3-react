@@ -28,8 +28,9 @@
     "types": [
       "gapi",
       "gapi.auth2",
-      "google.analytics",
+      "gtag.js",
       "facebook-js-sdk",
+      "facebook-pixel",
       "google.picker",
       "trackjs"
     ]

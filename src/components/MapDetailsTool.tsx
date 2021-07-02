@@ -1,31 +1,59 @@
 import { mapDetailsSetUserSelectedPosition } from 'fm3/actions/mapDetailsActions';
-import { RootState } from 'fm3/storeCreator';
+import { LatLon } from 'fm3/types/common';
 import { LeafletMouseEvent } from 'leaflet';
-import { useCallback } from 'react';
-import { useMapEvent } from 'react-leaflet';
-import { useDispatch, useSelector } from 'react-redux';
+import { ReactElement, useCallback, useState } from 'react';
+import { Circle, useMapEvent } from 'react-leaflet';
+import { useDispatch } from 'react-redux';
 
-export function MapDetailsTool(): null {
+export function MapDetailsTool(): ReactElement | null {
   const dispatch = useDispatch();
 
-  const subtool = useSelector((state: RootState) => state.mapDetails.subtool);
+  const [latLon, setLatLon] = useState<LatLon>();
 
   useMapEvent(
     'click',
     useCallback(
       ({ latlng }: LeafletMouseEvent) => {
-        if (subtool !== null) {
-          dispatch(
-            mapDetailsSetUserSelectedPosition({
-              lat: latlng.lat,
-              lon: latlng.lng,
-            }),
-          );
-        }
+        dispatch(
+          mapDetailsSetUserSelectedPosition({
+            lat: latlng.lat,
+            lon: latlng.lng,
+          }),
+        );
       },
-      [dispatch, subtool],
+      [dispatch],
     ),
   );
 
-  return null;
+  useMapEvent(
+    'mousemove',
+    useCallback(({ latlng, originalEvent }: LeafletMouseEvent) => {
+      if (
+        originalEvent.target &&
+        (originalEvent.target as HTMLElement).classList.contains(
+          'leaflet-container',
+        )
+      ) {
+        setLatLon({ lat: latlng.lat, lon: latlng.lng });
+      } else {
+        setLatLon(undefined);
+      }
+    }, []),
+  );
+
+  useMapEvent(
+    'mouseout',
+    useCallback(() => {
+      setLatLon(undefined);
+    }, []),
+  );
+
+  return !latLon ? null : (
+    <Circle
+      interactive={false}
+      center={[latLon.lat, latLon.lon]}
+      radius={33}
+      stroke={false}
+    />
+  );
 }

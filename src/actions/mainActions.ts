@@ -1,21 +1,18 @@
-import { AppState, LatLon } from 'fm3/types/common';
+import { basicModals, tools } from 'fm3/constants';
+import { LatLon } from 'fm3/types/common';
 import { createAction } from 'typesafe-actions';
 
-export type Tool =
-  | 'objects'
-  | 'route-planner'
-  | 'draw-lines'
-  | 'draw-polygons'
-  | 'route-planner'
-  | 'track-viewer'
-  | 'draw-points'
-  | 'changesets'
-  | 'map-details'
-  | 'maps';
+export type Tool = typeof tools[number];
+
+const specialModals = ['tips', 'edit-label'] as const;
+
+export type Modal = typeof basicModals[number] | typeof specialModals[number];
+
+export type ShowModal = typeof basicModals[number];
 
 export const setTool = createAction('SET_TOOL')<Tool | null>();
 
-export const setActiveModal = createAction('SET_ACTIVE_MODAL')<string | null>();
+export const setActiveModal = createAction('SET_ACTIVE_MODAL')<Modal | null>();
 
 export const setHomeLocation = createAction('SET_HOME_LOCATION')<{
   lat: number;
@@ -52,8 +49,6 @@ export type Destination = 'download' | 'gdrive' | 'dropbox';
 
 export const setExpertMode = createAction('SET_EXPERT_MODE')<boolean>();
 
-export const setAppState = createAction('SET_APP_STATE')<AppState>();
-
 export const exportGpx = createAction('EXPORT_GPX')<{
   exportables: string[];
   destination: Destination;
@@ -77,7 +72,11 @@ export const saveSettings = createAction('SAVE_SETTINGS')<{
   overlayPaneOpacity: number;
   expertMode: boolean;
   trackViewerEleSmoothingFactor: number;
-  user: { name: string | null; email: string | null } | null;
+  user: {
+    name: string | null;
+    email: string | null;
+    sendGalleryEmails: boolean;
+  } | null;
   preventTips: boolean;
 }>();
 
@@ -104,12 +103,19 @@ export interface DrawLinePolySelection {
   id: number;
 }
 
+export interface LinePointSelection {
+  type: 'line-point';
+  lineIndex: number;
+  pointId: number;
+}
+
 export interface TrackingSelection {
   type: 'tracking';
   id: string | number;
 }
 
 export type Selection =
+  | LinePointSelection
   | DrawPointSelection
   | ObjectsSelection
   | DrawLinePolySelection
@@ -118,7 +124,10 @@ export type Selection =
 export const selectFeature = createAction('SELECT_FEATURE')<Selection | null>();
 
 export const convertToDrawing = createAction('CONVERT_TO_DRAWING')<
-  number | undefined
+  | ObjectsSelection
+  | { type: 'planned-route'; tolerance: number }
+  | { type: 'track'; tolerance: number }
+  | { type: 'search-result' }
 >();
 
 export type ExternalTargets =
@@ -137,7 +146,8 @@ export type ExternalTargets =
   | 'openstreetcam'
   | 'mapillary'
   | 'url'
-  | 'image';
+  | 'image'
+  | 'peakfinder';
 
 export const openInExternalApp = createAction('OPEN_IN_EXTERNAL')<{
   where: ExternalTargets;
@@ -150,3 +160,9 @@ export const openInExternalApp = createAction('OPEN_IN_EXTERNAL')<{
   pointDescription?: string;
   url?: string;
 }>();
+
+export const applyCookieConsent = createAction('APPLY_COOKIE_CONSENT')();
+
+export const setAnalyticCookiesAllowed = createAction(
+  'SET_ANALYTICS_COOKIES_ALLOWED',
+)<boolean>();

@@ -15,10 +15,9 @@ import {
   Step,
   Waypoint,
 } from 'fm3/actions/routePlannerActions';
-import { toastsAdd } from 'fm3/actions/toastsActions';
+import { ToastAction, toastsAdd } from 'fm3/actions/toastsActions';
 import { httpRequest } from 'fm3/authAxios';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
-import { storage } from 'fm3/storage';
 import { transportTypeDefs } from 'fm3/transportTypeDefs';
 import { isActionOf } from 'typesafe-actions';
 import { assertType } from 'typescript-is';
@@ -40,13 +39,8 @@ export const routePlannerFindRouteProcessor: Processor = {
   actionCreator: updateRouteTypes,
   errorKey: 'routePlanner.fetchingError',
   handle: async ({ dispatch, getState, action }) => {
-    const {
-      start,
-      finish,
-      midpoints,
-      transportType,
-      mode,
-    } = getState().routePlanner;
+    const { start, finish, midpoints, transportType, mode } =
+      getState().routePlanner;
 
     if (!start || !finish || !transportType) {
       return;
@@ -116,24 +110,26 @@ export const routePlannerFindRouteProcessor: Processor = {
 
     if (code === 'Ok') {
       const showHint =
-        // TODO ??? !getState().routePlanner.shapePoints &&
-        !storage.getItem('routePlannerPreventHint') &&
+        !getState().routePlanner.preventHint &&
         !midpoints.length &&
         isActionOf([routePlannerSetStart, routePlannerSetFinish], action);
 
       if (showHint) {
+        const actions: ToastAction[] = [{ nameKey: 'general.ok' }];
+
+        if (getState().main.cookieConsentResult) {
+          actions.push({
+            nameKey: 'general.preventShowingAgain',
+            action: routePlannerPreventHint(),
+          });
+        }
+
         dispatch(
           toastsAdd({
             id: 'routePlanner.showMidpointHint',
             messageKey: 'routePlanner.showMidpointHint',
             style: 'info',
-            actions: [
-              { nameKey: 'general.ok' },
-              {
-                nameKey: 'general.preventShowingAgain',
-                action: routePlannerPreventHint(),
-              },
-            ],
+            actions,
           }),
         );
       }

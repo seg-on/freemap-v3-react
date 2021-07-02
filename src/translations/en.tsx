@@ -1,12 +1,17 @@
 /* eslint-disable */
 
 import { ChangesetDetails } from 'fm3/components/ChangesetDetails';
-import { RoadDetails } from 'fm3/components/RoadDetails';
+import { CookieConsent } from 'fm3/components/CookieConsent';
+import {
+  ObjectDetailBasicProps,
+  ObjectDetails,
+} from 'fm3/components/ObjectDetails';
 import { TrackViewerDetails } from 'fm3/components/TrackViewerDetails';
 import { latLonToString } from 'fm3/geoutils';
 import { Fragment } from 'react';
 import Alert from 'react-bootstrap/Alert';
-import { FaFlask, FaKey } from 'react-icons/fa';
+import { FaKey } from 'react-icons/fa';
+import shared from './en-shared.json';
 import { Messages } from './messagesInterface';
 
 const nf01 = Intl.NumberFormat('en', {
@@ -36,6 +41,8 @@ const getErrorMarkup = (ticketId?: string) => `
   Thank you.
 </p>`;
 
+const outdoorMap = 'Hiking, Bicycle, Ski, Riding';
+
 const en: Messages = {
   general: {
     iso: 'en_US',
@@ -64,6 +71,7 @@ const en: Messages = {
     minutes: 'minutes',
     meters: 'meters',
     createdAt: 'Created At',
+    modifiedAt: 'Modified At',
     actions: 'Actions',
     add: 'Add new',
     clear: 'Clear',
@@ -71,12 +79,19 @@ const en: Messages = {
     simplifyPrompt:
       'Please enter simplification factor. Set to zero for no simplification.',
     copyUrl: 'Copy URL',
+    copyPageUrl: 'Copy page URL',
     savingError: ({ err }) => `Save error: ${err}`,
     loadError: ({ err }) => `Loading error: ${err}`,
     deleteError: ({ err }) => `Deleting error: ${err}`,
+    operationError: ({ err }) => `Operation error: ${err}`,
     deleted: 'Deleted.',
     saved: 'Saved.',
     visual: 'Display',
+    copyOk: 'Copied to clipboard.',
+    noCookies: 'This functionality requires accepting the cookies consent.',
+    name: 'Name',
+    load: 'Load',
+    unnamed: 'No name',
   },
 
   selections: {
@@ -85,6 +100,8 @@ const en: Messages = {
     drawLines: 'Line',
     drawPolygons: 'Polygon',
     tracking: 'Tracking',
+    linePoint: 'Line point',
+    polygonPoint: 'Polygon point',
   },
 
   tools: {
@@ -101,11 +118,7 @@ const en: Messages = {
     changesets: 'Map changes',
     mapDetails: 'Map details',
     tracking: 'Live tracking',
-    maps: (
-      <>
-        My maps <FaFlask className="text-warning" />
-      </>
-    ),
+    maps: 'My maps',
   },
 
   routePlanner: {
@@ -320,8 +333,8 @@ const en: Messages = {
     imhdAttribution: 'public transport routes',
   },
 
-  more: {
-    more: 'More',
+  mainMenu: {
+    title: 'Main menu',
     logOut: (name) => `Log out ${name}`,
     logIn: 'Log in',
     settings: 'Settings',
@@ -340,9 +353,13 @@ const en: Messages = {
     github: 'Freemap on GitHub',
     automaticLanguage: 'Automatic',
     pdfExport: 'Export map',
+    osmWiki: 'OpenStreetMap documentation',
+    wikiLink: 'https://wiki.openstreetmap.org/wiki/Main_Page',
   },
 
   main: {
+    title: shared.title,
+    description: shared.description,
     clearMap: 'Clear map elements',
     close: 'Close',
     closeTool: 'Close tool',
@@ -357,12 +374,19 @@ const en: Messages = {
       </div>
     ),
     copyright: 'Copyright',
+    cookieConsent: () => (
+      <CookieConsent
+        prompt="Some features may require cookies. Accept:"
+        local="Cookies of local settings and login via social networks"
+        analytics="Analytics cookies"
+      />
+    ),
   },
 
   gallery: {
     filter: 'Filter',
     showPhotosFrom: 'View photos',
-    showLayer: 'Zobrazit vrstvu',
+    showLayer: 'Show the layer',
     upload: 'Upload',
     f: {
       firstUploaded: 'from first uploaded',
@@ -371,6 +395,16 @@ const en: Messages = {
       lastCaptured: 'from newest',
       leastRated: 'from least rated',
       mostRated: 'from most rated',
+      lastComment: 'from last comment',
+    },
+    colorizeBy: 'Colorize by',
+    c: {
+      disable: "don't colorize",
+      mine: 'differ mine',
+      author: 'author',
+      rating: 'rating',
+      takenAt: 'taken date',
+      createdAt: 'upload date',
     },
     viewer: {
       title: 'Photo',
@@ -443,6 +477,7 @@ const en: Messages = {
       rating: 'Rating',
       noTags: 'no tags',
     },
+    noPicturesFound: 'There were no photos found on this place.',
   },
 
   measurement: {
@@ -509,7 +544,8 @@ const en: Messages = {
       title: 'Upload the track',
       drop: 'Drop your .gpx file here or click here to select it.',
     },
-    shareToast: 'The track has been saved to the server and can be shared.',
+    shareToast:
+      'The track has been saved to the server and can be shared by copying page URL.',
     fetchingError: ({ err }) => `Error fetching track data: ${err}`,
     savingError: ({ err }) => `Error saving the track: ${err}`,
     loadingError: 'Error loading file.',
@@ -526,6 +562,11 @@ const en: Messages = {
       label: 'Label:',
       hint: 'To remove label leave its field empty.',
     },
+    continue: 'Continue',
+    join: 'Join',
+    split: 'Split',
+    stopDrawing: 'Stop drawing',
+    selectPointToJoin: 'Select point to join lines',
   },
 
   settings: {
@@ -547,10 +588,19 @@ const en: Messages = {
       name: 'Name',
       email: 'Email',
       noAuthInfo: 'Only for logged-in users.',
+      sendGalleryEmails: 'Notify photo comments via email',
+      DeleteInfo: () => (
+        <>
+          If you wish to delete your account, please contact us at{' '}
+          <Alert.Link href="mailto:freemap@freemap.sk">
+            freemap@freemap.sk
+          </Alert.Link>
+          .
+        </>
+      ),
     },
     general: {
-      tips:
-        'Show tips on page opening (only if Slovak or Czech language is selected)',
+      tips: 'Show tips on page opening (only if Slovak or Czech language is selected)',
     },
     expertInfo: `
       <div style="text-align: left">
@@ -568,8 +618,7 @@ const en: Messages = {
       trackViewerEleSmoothing: {
         label: (value) =>
           `Smoothing level for computing total climb/descend in Track viewer: ${value}`,
-        info:
-          'For value 1 all elevations are used separately. Higher values represent floating window width used to smooth elevations.',
+        info: 'For value 1 all elevations are used separately. Higher values represent floating window width used to smooth elevations.',
       },
     },
     saveSuccess: 'Settings have been saved.',
@@ -598,10 +647,16 @@ const en: Messages = {
   },
 
   mapDetails: {
-    road: 'Road info',
     notFound: 'No road found.',
     fetchingError: ({ err }) => `Error fetching road details: ${err}`,
-    detail: ({ element }) => <RoadDetails way={element} />,
+    detail: (props: ObjectDetailBasicProps) => (
+      <ObjectDetails
+        {...props}
+        openText="Open at OpenStreetMap.org"
+        historyText="history"
+        editInJosmText="Edit in JOSM"
+      />
+    ),
   },
 
   objects: {
@@ -1011,7 +1066,7 @@ const en: Messages = {
       p: 'OpenTopoMap',
       d: 'Public transport (ÖPNV)',
       h: 'Historic',
-      X: 'Hiking + Bicycle + Ski',
+      X: outdoorMap,
       i: 'Interactive layer',
       I: 'Photos',
       l: 'Forest tracks NLC (SK)',
@@ -1029,6 +1084,8 @@ const en: Messages = {
       s3: 'Strava (water activities)',
       s4: 'Strava (winter activities)',
       w: 'Wikipedia',
+      '4': 'Light Hillshading DMR 5.0',
+      '5': 'Gray Hillshading DMR 5.0',
     },
     type: {
       map: 'map',
@@ -1136,6 +1193,8 @@ const en: Messages = {
           Watch Device <i>{name}</i>
         </>
       ),
+      storageWarning:
+        'Please note that the list of devices is only reflected in the page URL. If you want to save it, use the "My Maps" function.',
     },
     accessToken: {
       token: 'Watch Token',
@@ -1152,10 +1211,10 @@ const en: Messages = {
         </>
       ),
       desc: (deviceName) => (
-        <p>
+        <>
           Define watch tokens to share position of your device{' '}
           <i>{deviceName}</i> with your friends.
-        </p>
+        </>
       ),
       createTitle: (deviceName) => (
         <>
@@ -1325,7 +1384,9 @@ const en: Messages = {
       <>
         Notes:
         <ul>
-          <li>Exported will be new outdoor map.</li>
+          <li>
+            Exported will be <i>{outdoorMap}</i> map.
+          </li>
           <li>Export of the map may last tens of seconds.</li>
           <li>
             Before sharing exported map accompain it with the following
@@ -1364,25 +1425,45 @@ const en: Messages = {
   },
 
   maps: {
-    noMap: 'No map',
-    create: 'Save as…',
+    noMapFound: 'No map found',
     save: 'Save',
-    rename: 'Rename',
     delete: 'Delete',
-    namePrompt: 'Map name:',
-    deleteConfirm: 'Are you sure to delete this map?',
+    disconnect: 'Disconnect',
+    deleteConfirm: (name) => `Are you sure to delete map ${name}?`,
     fetchError: ({ err }) => `Error loading map: ${err}`,
     fetchListError: ({ err }) => `Error loading maps: ${err}`,
     deleteError: ({ err }) => `Error deleting map: ${err}`,
     renameError: ({ err }) => `Error renaming map: ${err}`,
     createError: ({ err }) => `Error saving map: ${err}`,
     saveError: ({ err }) => `Error saving map: ${err}`,
+    loadToEmpty: 'Load to empty map',
+    loadInclMapAndPosition:
+      'Load including saved background map and its position',
+    savedMaps: 'Saved maps',
+    newMap: 'New map',
+    SomeMap: ({ name }) => (
+      <>
+        Map <i>{name}</i>
+      </>
+    ),
+    unauthenticatedError: 'Please log-in to access My maps functionality.',
+  },
+
+  mapCtxMenu: {
+    centerMap: 'Center map',
+    measurePosition: 'Measure position',
+    addPoint: 'Add point',
+    startLine: 'Start line',
+    queryFeatures: 'Query features',
+    startRoute: 'Start route',
+    finishRoute: 'Finish route',
+    showPhotos: 'Show photos',
   },
 
   legend: {
     body: () => (
       <>
-        Map legend for <i>Hiking + Bicycle + Ski</i>:
+        Map legend for <i>{outdoorMap}</i>:
       </>
     ),
   },

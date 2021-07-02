@@ -1,15 +1,11 @@
 import { RootAction } from 'fm3/actions';
-import {
-  clearMap,
-  selectFeature,
-  setAppState,
-  setTool,
-} from 'fm3/actions/mainActions';
+import { clearMap, selectFeature, setTool } from 'fm3/actions/mainActions';
 import { mapsDataLoaded } from 'fm3/actions/mapsActions';
 import {
   Alternative,
   PickMode,
   routePlannerAddMidpoint,
+  routePlannerPreventHint,
   routePlannerRemoveMidpoint,
   routePlannerSetActiveAlternativeIndex,
   routePlannerSetFinish,
@@ -32,29 +28,29 @@ import { createReducer } from 'typesafe-actions';
 
 export type RouteMode = 'trip' | 'roundtrip' | 'route';
 
-export interface RoutePlannerState {
+export interface RoutePlannerCleanResultState {
   alternatives: Alternative[];
   waypoints: Waypoint[];
   activeAlternativeIndex: number;
   timestamp: number | null;
-  transportType: TransportType | null;
+}
+
+export interface RoutePlannerCleanState extends RoutePlannerCleanResultState {
   start: LatLon | null;
   midpoints: LatLon[];
   finish: LatLon | null;
   pickMode: PickMode | null;
   itineraryIsVisible: boolean;
-  mode: RouteMode;
-  milestones: boolean;
 }
 
-const clearResult = {
+const clearResult: RoutePlannerCleanResultState = {
   alternatives: [],
   waypoints: [],
   activeAlternativeIndex: 0,
   timestamp: null,
 };
 
-export const cleanState = {
+export const cleanState: RoutePlannerCleanState = {
   start: null,
   midpoints: [],
   finish: null,
@@ -63,25 +59,36 @@ export const cleanState = {
   ...clearResult,
 };
 
-export const initialState: RoutePlannerState = {
-  transportType: null,
+export interface RoutePlannerState extends RoutePlannerCleanState {
+  transportType: TransportType;
+  mode: RouteMode;
+  milestones: boolean;
+  preventHint: boolean;
+}
+
+export const routePlannerInitialState: RoutePlannerState = {
+  transportType: 'foot-osm',
   mode: 'route',
   milestones: false,
+  preventHint: false,
   ...cleanState,
 };
 
 export const routePlannerReducer = createReducer<RoutePlannerState, RootAction>(
-  initialState,
+  routePlannerInitialState,
 )
+  .handleAction(routePlannerPreventHint, (state) => {
+    return {
+      ...state,
+      preventHint: true,
+    };
+  })
   .handleAction(routePlannerToggleMilestones, (state, action) => {
     return {
       ...state,
       milestones:
         action.payload === undefined ? !state.milestones : action.payload,
     };
-  })
-  .handleAction(setAppState, (state, action) => {
-    return { ...state, ...action.payload.routePlanner };
   })
   .handleAction(selectFeature, (state) => ({
     ...state,
@@ -96,7 +103,8 @@ export const routePlannerReducer = createReducer<RoutePlannerState, RootAction>(
       : null,
   }))
   .handleAction(clearMap, (state) => ({
-    ...initialState,
+    ...routePlannerInitialState,
+    preventHint: state.preventHint,
     transportType: state.transportType,
     mode: state.mode,
   }))
@@ -104,7 +112,8 @@ export const routePlannerReducer = createReducer<RoutePlannerState, RootAction>(
     ...state,
     ...(action.payload.start === null || action.payload.finish === null
       ? {
-          ...initialState,
+          ...routePlannerInitialState,
+          preventHint: state.preventHint,
           transportType: state.transportType,
           mode: state.mode,
         }
@@ -210,15 +219,18 @@ export const routePlannerReducer = createReducer<RoutePlannerState, RootAction>(
     ...state,
     activeAlternativeIndex: action.payload,
   }))
-  .handleAction(mapsDataLoaded, (_state, { payload: { routePlanner } }) => {
+  .handleAction(mapsDataLoaded, (state, { payload: { routePlanner } }) => {
     return {
-      ...initialState,
-      transportType: routePlanner?.transportType ?? initialState.transportType,
-      start: routePlanner?.start ?? initialState.start,
-      midpoints: routePlanner?.midpoints ?? initialState.midpoints,
-      finish: routePlanner?.finish ?? initialState.finish,
-      pickMode: routePlanner?.pickMode ?? initialState.pickMode,
-      mode: routePlanner?.mode ?? initialState.mode,
-      milestones: routePlanner?.milestones ?? initialState.milestones,
+      ...routePlannerInitialState,
+      preventHint: state.preventHint,
+      transportType:
+        routePlanner?.transportType ?? routePlannerInitialState.transportType,
+      start: routePlanner?.start ?? routePlannerInitialState.start,
+      midpoints: routePlanner?.midpoints ?? routePlannerInitialState.midpoints,
+      finish: routePlanner?.finish ?? routePlannerInitialState.finish,
+      pickMode: routePlanner?.pickMode ?? routePlannerInitialState.pickMode,
+      mode: routePlanner?.mode ?? routePlannerInitialState.mode,
+      milestones:
+        routePlanner?.milestones ?? routePlannerInitialState.milestones,
     };
   });

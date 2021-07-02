@@ -3,13 +3,16 @@ import { Processor } from 'fm3/middlewares/processorMiddleware';
 
 export const galleryShowImageGaProcessor: Processor = {
   actionCreator: gallerySetImage,
-  handle: async ({ getState }) => {
+  async handle({ getState }) {
     const {
       gallery: { image },
     } = getState();
 
     if (image) {
-      window.ga('send', 'event', 'Gallery', 'showPhoto', image.id);
+      window.gtag('event', 'showPhoto' as any, {
+        event_category: 'Gallery',
+        value: image.id,
+      });
     }
   },
 };

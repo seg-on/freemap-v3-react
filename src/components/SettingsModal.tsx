@@ -7,7 +7,6 @@ import { latLonToString } from 'fm3/geoutils';
 import { useMessages } from 'fm3/l10nInjector';
 import { getMapLeafletElement } from 'fm3/leafletElementHolder';
 import { overlayLayers } from 'fm3/mapDefinitions';
-import { RootState } from 'fm3/storeCreator';
 import { LeafletMouseEvent } from 'leaflet';
 import { ReactElement, useCallback, useEffect, useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
@@ -36,25 +35,21 @@ type Props = { show: boolean };
 
 export function SettingsModal({ show }: Props): ReactElement {
   const init = {
-    homeLocation: useSelector((state: RootState) => state.main.homeLocation),
-    overlayOpacity: useSelector((state: RootState) => state.map.overlayOpacity),
-    overlayPaneOpacity: useSelector(
-      (state: RootState) => state.map.overlayPaneOpacity,
-    ),
-    expertMode: useSelector((state: RootState) => state.main.expertMode),
-    eleSmoothingFactor: useSelector(
-      (state: RootState) => state.main.eleSmoothingFactor,
-    ),
-    preventTips: useSelector((state: RootState) => state.tips.preventTips),
+    homeLocation: useSelector((state) => state.main.homeLocation),
+    overlayOpacity: useSelector((state) => state.map.overlayOpacity),
+    overlayPaneOpacity: useSelector((state) => state.map.overlayPaneOpacity),
+    expertMode: useSelector((state) => state.main.expertMode),
+    eleSmoothingFactor: useSelector((state) => state.main.eleSmoothingFactor),
+    preventTips: useSelector((state) => state.tips.preventTips),
   };
 
   const selectingHomeLocation = useSelector(
-    (state: RootState) => state.main.selectingHomeLocation,
+    (state) => state.main.selectingHomeLocation,
   );
 
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user = useSelector((state) => state.auth.user);
 
-  const language = useSelector((state: RootState) => state.l10n.language);
+  const language = useSelector((state) => state.l10n.language);
 
   const m = useMessages();
 
@@ -75,6 +70,10 @@ export function SettingsModal({ show }: Props): ReactElement {
   const [name, setName] = useState(user?.name ?? '');
 
   const [email, setEmail] = useState(user?.email ?? '');
+
+  const [sendGalleryEmails, setSendGalleryEmails] = useState(
+    user?.sendGalleryEmails ?? true,
+  );
 
   const [preventTips, setPreventTips] = useState(init.preventTips);
 
@@ -107,7 +106,10 @@ export function SettingsModal({ show }: Props): ReactElement {
     eleSmoothingFactor !== init.eleSmoothingFactor ||
     preventTips !== init.preventTips ||
     overlayPaneOpacity !== init.overlayPaneOpacity ||
-    (user && (name !== (user.name ?? '') || email !== (user.email ?? ''))) ||
+    (user &&
+      (name !== (user.name ?? '') ||
+        email !== (user.email ?? '') ||
+        sendGalleryEmails !== user?.sendGalleryEmails)) ||
     overlayLayers.some(
       ({ type }) =>
         (overlayOpacity[type] || 1) !== (init.overlayOpacity[type] || 1),
@@ -126,6 +128,8 @@ export function SettingsModal({ show }: Props): ReactElement {
     dispatch(setActiveModal(null));
   }, [dispatch]);
 
+  const DeleteInfo = m?.settings.account.DeleteInfo;
+
   return (
     <Modal show={show && !selectingHomeLocation} onHide={close}>
       <form
@@ -143,6 +147,7 @@ export function SettingsModal({ show }: Props): ReactElement {
                 ? {
                     name: name.trim() || null,
                     email: email.trim() || null,
+                    sendGalleryEmails,
                   }
                 : null,
               preventTips,
@@ -152,7 +157,7 @@ export function SettingsModal({ show }: Props): ReactElement {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            <FaCog /> {m?.more.settings}
+            <FaCog /> {m?.mainMenu.settings}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -303,6 +308,9 @@ export function SettingsModal({ show }: Props): ReactElement {
             <Tab title={m?.settings.tab.account} eventKey="2" className="pt-2">
               {user ? (
                 <>
+                  <Alert variant="warning">
+                    {DeleteInfo && <DeleteInfo />}
+                  </Alert>
                   <FormGroup>
                     <FormLabel>{m?.settings.account.name}</FormLabel>
                     <FormControl
@@ -325,6 +333,15 @@ export function SettingsModal({ show }: Props): ReactElement {
                       maxLength={255}
                     />
                   </FormGroup>
+                  <FormCheck
+                    id="chk-galEmails"
+                    type="checkbox"
+                    onChange={(e) => {
+                      setSendGalleryEmails(e.currentTarget.checked);
+                    }}
+                    checked={sendGalleryEmails}
+                    label={m?.settings.account.sendGalleryEmails}
+                  />
                 </>
               ) : (
                 <Alert variant="warning">

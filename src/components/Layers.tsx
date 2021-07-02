@@ -6,28 +6,26 @@ import {
   OverlayLayerDef,
   overlayLayers,
 } from 'fm3/mapDefinitions';
-// import { BingLayer } from 'react-leaflet-bing';
-import { RootState } from 'fm3/storeCreator';
 import { ReactElement } from 'react';
 import { useSelector } from 'react-redux';
 import missingTile from '../images/missing-tile-256x256.png';
 
 export function Layers(): ReactElement {
-  const overlays = useSelector((state: RootState) => state.map.overlays);
+  const overlays = useSelector((state) => state.map.overlays);
 
-  const mapType = useSelector((state: RootState) => state.map.mapType);
+  const mapType = useSelector((state) => state.map.mapType);
 
-  const overlayOpacity = useSelector(
-    (state: RootState) => state.map.overlayOpacity,
-  );
+  const overlayOpacity = useSelector((state) => state.map.overlayOpacity);
 
-  const galleryFilter = useSelector((state: RootState) => state.gallery.filter);
+  const galleryFilter = useSelector((state) => state.gallery.filter);
 
-  const galleryDirtySeq = useSelector(
-    (state: RootState) => state.gallery.dirtySeq,
-  );
+  const galleryColorizeBy = useSelector((state) => state.gallery.colorizeBy);
 
-  const isAdmin = useSelector((state: RootState) => !!state.auth.user?.isAdmin);
+  const galleryDirtySeq = useSelector((state) => state.gallery.dirtySeq);
+
+  const isAdmin = useSelector((state) => !!state.auth.user?.isAdmin);
+
+  const userId = useSelector((state) => state.auth.user?.id);
 
   const getTileLayer = ({
     type,
@@ -57,10 +55,15 @@ export function Layers(): ReactElement {
     if (type === 'I') {
       return (
         <GalleryLayer
-          key={`I-${galleryDirtySeq}-${JSON.stringify(galleryFilter)}`}
+          key={`I-${galleryDirtySeq}-${JSON.stringify({
+            galleryFilter,
+            galleryColorizeBy,
+          })}`}
           filter={galleryFilter}
+          colorizeBy={galleryColorizeBy}
           opacity={overlayOpacity[type] || 1}
           zIndex={zIndex}
+          myUserId={userId}
         />
       );
     }

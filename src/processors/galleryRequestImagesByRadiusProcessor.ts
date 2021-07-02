@@ -3,9 +3,11 @@ import {
   galleryRequestImages,
   gallerySetImageIds,
 } from 'fm3/actions/galleryActions';
+import { toastsAdd } from 'fm3/actions/toastsActions';
 import { httpRequest } from 'fm3/authAxios';
 import { createFilter } from 'fm3/galleryUtils';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
+import { getType } from 'typesafe-actions';
 import { assertType } from 'typescript-is';
 
 export const galleryRequestImagesByRadiusProcessor: Processor<
@@ -13,7 +15,7 @@ export const galleryRequestImagesByRadiusProcessor: Processor<
 > = {
   actionCreator: galleryRequestImages,
   errorKey: 'gallery.picturesFetchingError',
-  handle: async ({ getState, dispatch, action }) => {
+  async handle({ getState, dispatch, action }) {
     const { lat, lon } = action.payload;
 
     const { data } = await httpRequest({
@@ -36,6 +38,16 @@ export const galleryRequestImagesByRadiusProcessor: Processor<
 
     if (ids.length) {
       dispatch(galleryRequestImage(ids[0]));
+    } else {
+      dispatch(
+        toastsAdd({
+          id: 'gallery.noPicturesFound',
+          timeout: 5000,
+          style: 'warning',
+          messageKey: 'gallery.noPicturesFound',
+          cancelType: [getType(galleryRequestImages)],
+        }),
+      );
     }
   },
 };

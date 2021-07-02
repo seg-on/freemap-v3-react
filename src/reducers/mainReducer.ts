@@ -1,15 +1,21 @@
 import { RootAction } from 'fm3/actions';
 import { authLogout, authSetUser } from 'fm3/actions/authActions';
-import { drawingLineSetLines } from 'fm3/actions/drawingLineActions';
 import {
+  drawingLineContinue,
+  drawingLineSetLines,
+  drawingLineStopDrawing,
+} from 'fm3/actions/drawingLineActions';
+import {
+  applyCookieConsent,
   clearMap,
   convertToDrawing,
   deleteFeature,
   enableUpdatingUrl,
+  Modal,
   selectFeature,
   Selection,
   setActiveModal,
-  setAppState,
+  setAnalyticCookiesAllowed,
   setEmbedFeatures,
   setErrorTicketId,
   setExpertMode,
@@ -27,15 +33,13 @@ import { trackViewerSetEleSmoothingFactor } from 'fm3/actions/trackViewerActions
 import { LatLon } from 'fm3/types/common';
 import { createReducer } from 'typesafe-actions';
 
-const embed = window.self !== window.top;
-
 interface Location extends LatLon {
   accuracy: number;
 }
 
 export interface MainState {
   tool: Tool | null;
-  activeModal: string | null;
+  activeModal: Modal | null;
   homeLocation: LatLon | null;
   progress: Array<string | number>;
   location: Location | null;
@@ -47,9 +51,11 @@ export interface MainState {
   eleSmoothingFactor: number;
   embedFeatures: string[];
   selection: Selection | null;
+  cookieConsentResult: boolean | null;
+  analyticCookiesAllowed: boolean;
 }
 
-const initialState: MainState = {
+export const mainInitialState: MainState = {
   tool: null,
   activeModal: null,
   homeLocation: null,
@@ -63,11 +69,15 @@ const initialState: MainState = {
   eleSmoothingFactor: 5,
   embedFeatures: [],
   selection: null,
+  cookieConsentResult: null,
+  analyticCookiesAllowed: true,
 };
 
-export const mainReducer = createReducer<MainState, RootAction>(initialState)
+export const mainReducer = createReducer<MainState, RootAction>(
+  mainInitialState,
+)
   .handleAction(setTool, (state, action) => {
-    return embed
+    return window.fmEmbedded
       ? state
       : {
           ...state,
@@ -78,14 +88,17 @@ export const mainReducer = createReducer<MainState, RootAction>(initialState)
               : null,
         };
   })
+  .handleAction(drawingLineStopDrawing, (state) => {
+    return {
+      ...state,
+      tool: null,
+    };
+  })
   .handleAction(clearMap, (state) => {
     return {
       ...state,
       selection: null,
     };
-  })
-  .handleAction(setAppState, (state, action) => {
-    return { ...state, ...action.payload.main };
   })
   .handleAction(authSetUser, (state, action) => {
     const p = action.payload;
@@ -165,8 +178,12 @@ export const mainReducer = createReducer<MainState, RootAction>(initialState)
     ...state,
     embedFeatures: action.payload,
   }))
+  .handleAction(drawingLineContinue, (state, action) => ({
+    ...state,
+    selection: { type: 'draw-line-poly', id: action.payload.lineIndex },
+  }))
   .handleAction(selectFeature, (state, action) =>
-    embed
+    window.fmEmbedded
       ? state
       : {
           ...state,
@@ -183,7 +200,18 @@ export const mainReducer = createReducer<MainState, RootAction>(initialState)
     ...state,
     tool: null,
   }))
+  .handleAction(applyCookieConsent, (state) => ({
+    ...state,
+    cookieConsentResult: state.analyticCookiesAllowed,
+  }))
+  .handleAction(setAnalyticCookiesAllowed, (state, action) => ({
+    ...state,
+    analyticCookiesAllowed: action.payload,
+  }))
   .handleAction([drawingLineSetLines, deleteFeature], (state) => ({
     ...state,
-    selection: null,
+    selection:
+      state.selection?.type === 'line-point'
+        ? { type: 'draw-line-poly', id: state.selection.lineIndex }
+        : null,
   }));

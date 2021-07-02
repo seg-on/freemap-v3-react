@@ -9,7 +9,6 @@ import {
   overlayLayers,
   OverlayLetters,
 } from 'fm3/mapDefinitions';
-import { RootState } from 'fm3/storeCreator';
 import {
   MouseEvent,
   ReactElement,
@@ -50,24 +49,23 @@ function getKbdShortcut(key?: [string, boolean]) {
 export function MapSwitchButton(): ReactElement {
   const m = useMessages();
 
-  const zoom = useSelector((state: RootState) => state.map.zoom);
+  const zoom = useSelector((state) => state.map.zoom);
 
-  const mapType = useSelector((state: RootState) => state.map.mapType);
+  const mapType = useSelector((state) => state.map.mapType);
 
-  const overlays = useSelector((state: RootState) => state.map.overlays);
+  const overlays = useSelector((state) => state.map.overlays);
 
-  const expertMode = useSelector((state: RootState) => state.main.expertMode);
+  const expertMode = useSelector((state) => state.main.expertMode);
 
   const pictureFilterIsActive = useSelector(
-    (state: RootState) =>
-      Object.values(state.gallery.filter).filter((x) => x).length > 0,
+    (state) => Object.values(state.gallery.filter).filter((x) => x).length > 0,
   );
 
   const isAdmin = useSelector(
-    (state: RootState) => !!(state.auth.user && state.auth.user.isAdmin),
+    (state) => !!(state.auth.user && state.auth.user.isAdmin),
   );
 
-  const language = useSelector((state: RootState) => state.l10n.language);
+  const language = useSelector((state) => state.l10n.language);
 
   const dispatch = useDispatch();
 
@@ -86,7 +84,9 @@ export function MapSwitchButton(): ReactElement {
   }, []);
 
   const handleMapSelect = useCallback(
-    (mapType1: string) => {
+    (mapType1: string | null, e: SyntheticEvent<unknown>) => {
+      e.preventDefault();
+
       setShow(false);
 
       if (mapType !== mapType1 && is<BaseLayerLetters>(mapType1)) {
@@ -239,7 +239,7 @@ export function MapSwitchButton(): ReactElement {
         onHide={handleHide}
         target={(isWide ? buttonRef.current : button2Ref.current) ?? null}
       >
-        <Popover id="popover-trigger-click-root-close" className="fm-menu">
+        <Popover id="popover-map-switch" className="fm-menu">
           <Popover.Content className="fm-menu-scroller" ref={sc}>
             <div />
 
@@ -253,8 +253,10 @@ export function MapSwitchButton(): ReactElement {
                 .filter(({ adminOnly }) => isAdmin || !adminOnly)
                 .map(({ type, icon, minZoom, key }) => (
                   <Dropdown.Item
+                    href={`?layers=${type}`}
                     key={type}
-                    onClick={() => handleMapSelect(type)}
+                    eventKey={type}
+                    onSelect={handleMapSelect}
                   >
                     {mapType === type ? <FaRegCheckCircle /> : <FaRegCircle />}{' '}
                     {icon}{' '}
@@ -288,6 +290,7 @@ export function MapSwitchButton(): ReactElement {
               .map(({ type, icon, minZoom, key }) => (
                 <Dropdown.Item
                   key={type}
+                  as="button"
                   eventKey={type}
                   onSelect={handleOverlaySelect}
                 >

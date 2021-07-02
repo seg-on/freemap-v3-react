@@ -10,6 +10,12 @@ const WebpackPwaManifest = require('webpack-pwa-manifest');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const WorkboxPlugin = require('workbox-webpack-plugin');
+const cssnano = require('cssnano');
+
+const skMessages = require('./src/translations/sk-shared.json');
+const csMessages = require('./src/translations/cs-shared.json');
+const enMessages = require('./src/translations/en-shared.json');
+const huMessages = require('./src/translations/hu-shared.json');
 
 const prod = process.env.DEPLOYMENT && process.env.DEPLOYMENT !== 'dev';
 
@@ -18,7 +24,24 @@ const fastDev = !prod && !process.env.DISABLE_FAST_DEV;
 const renderer = new marked.Renderer();
 
 renderer.link = (href, title, text) =>
-  `<a href="${href}" target="_blank" title="${title}">${text}</a>`;
+  `<a href="${href}" title="${title ?? ''}">${text}</a>`;
+
+const htmlPluginProps = {
+  filename: 'index.html',
+  template: 'index.ejs',
+  inject: false,
+  templateParameters: {
+    lang: 'en',
+    title: enMessages.title,
+    description: enMessages.description,
+    errorHtml:
+      '<h1>Problem starting application</h1>' +
+      '<p>Please make sure you are using recent version of a modern browser (Google Chrome, Firefox, Safari, Opera, Edge, Chromium, Vivaldi, Brave, …).</p>',
+    nojsMessage:
+      'JavaScript enabled browser is required to run this application.',
+    loadingMessage: 'Loading…',
+  },
+};
 
 module.exports = {
   mode: prod ? 'production' : 'development',
@@ -59,8 +82,8 @@ module.exports = {
         },
       },
       {
-        // babelify some very modern libraries
-        test: /\bnode_modules\/.*\b(exifreader|strict-uri-encode|query-string|split-on-first|leaflet)\/.*\.js$/,
+        // babelify some too modern libraries
+        test: /\bnode_modules\/.*\/?(exifreader|strict-uri-encode|query-string|split-on-first|leaflet|@?react-leaflet)\/.*\.js$/,
         loader: 'babel-loader',
         options: {
           presets: [
@@ -68,7 +91,7 @@ module.exports = {
               '@babel/preset-env',
               {
                 targets: {
-                  browsers: ['> 2%'],
+                  browsers: ['> 0.5%'],
                 },
               },
             ],
@@ -165,38 +188,84 @@ module.exports = {
       },
       async: fastDev,
     }),
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: prod ? JSON.stringify('production') : 'undefined', // for react
-        BROWSER: JSON.stringify(true),
-        DEPLOYMENT: JSON.stringify(process.env.DEPLOYMENT),
-        FM_MAPSERVER_URL: JSON.stringify(process.env.FM_MAPSERVER_URL),
-        MAX_GPX_TRACK_SIZE_IN_MB: JSON.stringify(15),
-        BASE_URL: JSON.stringify(
-          {
-            www: 'https://www.freemap.sk',
-            next: 'https://next.freemap.sk',
-          }[process.env.DEPLOYMENT] || 'https://local.freemap.sk:9000',
-        ),
-        API_URL: JSON.stringify(
-          {
-            www: 'https://backend.freemap.sk',
-            next: 'https://backend.freemap.sk',
-          }[process.env.DEPLOYMENT] || 'https://local.freemap.sk:3000',
-        ),
-        GA_TRACKING_CODE: JSON.stringify(
-          { www: 'UA-89861822-3', next: 'UA-89861822-4' }[
-            process.env.DEPLOYMENT
-          ] || null,
-        ),
-      },
+    new webpack.EnvironmentPlugin({
+      NODE_ENV: prod ? 'production' : null, // for react
+      BROWSER: true,
+      DEPLOYMENT: process.env.DEPLOYMENT ?? null,
+      FM_MAPSERVER_URL:
+        process.env.FM_MAPSERVER_URL || 'https://outdoor.tiles.freemap.sk',
+      MAX_GPX_TRACK_SIZE_IN_MB: 15,
+      BASE_URL:
+        {
+          www: 'https://www.freemap.sk',
+          next: 'https://next.freemap.sk',
+        }[process.env.DEPLOYMENT] || 'https://local.freemap.sk:9000',
+      API_URL:
+        {
+          www: 'https://backend.freemap.sk',
+          next: 'https://backend.freemap.sk',
+        }[process.env.DEPLOYMENT] || 'https://local.freemap.sk:3000',
+      GA_MEASUREMENT_ID:
+        { www: 'UA-89861822-3', next: 'UA-89861822-4' }[
+          process.env.DEPLOYMENT
+        ] || null,
+      FB_APP_ID:
+        { www: '681854635902254', next: '681854635902254' }[
+          process.env.DEPLOYMENT
+        ] || null,
     }),
     new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin(htmlPluginProps), // fallback for dev
     new HtmlWebpackPlugin({
-      template: '!!ejs-loader?esModule=false!src/index.html',
-      inject: false,
+      ...htmlPluginProps,
+      filename: 'index-en.html',
     }),
-    // TODO we use InjectManifest only to generate sw.js. Find simpler way to do it.
+    new HtmlWebpackPlugin({
+      ...htmlPluginProps,
+      filename: 'index-sk.html',
+      templateParameters: {
+        lang: 'sk',
+        title: skMessages.title,
+        description: skMessages.description,
+        errorHtml:
+          '<h1>Aplikáciu sa nepodarilo spustiť</h1>' +
+          '<p>Uistite sa, že používate aktuálnu verziu niektorého zo súčasných prehliadačov (Google Chrome, Firefox, Safari, Opera, Edge, Chromium, Vivaldi, Brave, …).<p>',
+        nojsMessage:
+          'Aplikácia vyžaduje prehliadač so zapnutou podporou JavaScriptu.',
+        loadingMessage: 'Načítavam…',
+      },
+    }),
+    new HtmlWebpackPlugin({
+      ...htmlPluginProps,
+      filename: 'index-cs.html',
+      templateParameters: {
+        lang: 'cs',
+        title: csMessages.title,
+        description: csMessages.description,
+        errorHtml:
+          '<h1>Aplikaci se nepodařilo spustit</h1>' +
+          '<p>Ujistěte se, že používáte aktuální verzi některého ze současných prohlížečů (Google Chrome, Firefox, Safari, Opera, Edge, Chromium, Vivaldi, Brave, …).<p>',
+        nojsMessage:
+          'Aplikace vyžaduje prohlížeč se zapnutou podporou JavaScriptu.',
+        loadingMessage: 'Načítám…',
+      },
+    }),
+    new HtmlWebpackPlugin({
+      ...htmlPluginProps,
+      filename: 'index-hu.html',
+      templateParameters: {
+        lang: 'hu',
+        title: huMessages.title,
+        description: huMessages.description,
+        errorHtml:
+          '<h1>Hiba történt az alkalmazás elindításánál</h1>' +
+          '<p>Győződjék meg arról, hogy egy modern böngésző (Google Chrome, Firefox, Safari, Opera, Edge, Chromium, Vivaldi, Brave, …) friss verzióját használja.</p>',
+        nojsMessage:
+          'Az alkalmazás futtatásához JavaScriptet támogató böngészőre van szükség.',
+        loadingMessage: 'Loading…', // TODO translate
+      },
+    }),
+    // TODO we use InjectManifest only to generate sw.js. Find a simpler way to do it.
     new WorkboxPlugin.InjectManifest({
       swSrc: '../sw/sw.ts',
       maximumFileSizeToCacheInBytes: 1,
@@ -258,7 +327,7 @@ module.exports = {
       }),
     prod &&
       new OptimizeCssAssetsPlugin({
-        cssProcessor: require('cssnano'),
+        cssProcessor: cssnano(),
         cssProcessorPluginOptions: {
           preset: ['default', { discardComments: { removeAll: true } }],
         },

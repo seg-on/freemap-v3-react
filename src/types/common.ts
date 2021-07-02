@@ -1,7 +1,3 @@
-import { MapStateBase } from 'fm3/actions/mapActions';
-import { MainState } from 'fm3/reducers/mainReducer';
-import { RoutePlannerState } from 'fm3/reducers/routePlannerReducer';
-import { TrackViewerState } from 'fm3/reducers/trackViewerReducer';
 import { Messages } from 'fm3/translations/messagesInterface';
 
 export interface LatLon {
@@ -12,6 +8,7 @@ export interface LatLon {
 export interface User {
   name: string;
   email: string | null;
+  sendGalleryEmails: boolean;
   id: number;
   authToken: string;
   isAdmin: boolean;
@@ -24,27 +21,16 @@ export interface User {
   preventTips?: boolean;
   lat?: number | null;
   lon?: number | null;
-  notValidated?: boolean;
+  language?: string | null;
 }
 
 declare global {
   interface Window {
-    ga: UniversalAnalytics.ga;
-    FB: fb.FacebookStatic;
     fbAsyncInit?: () => void;
-    handleGoogleAuthApiLoad?: () => void;
     preventMapClick?: boolean;
     translations?: Messages;
+    fmEmbedded: boolean;
   }
-}
-
-export interface AppState {
-  version?: number;
-  main: Pick<MainState, 'homeLocation' | 'expertMode'>;
-  map: MapStateBase;
-  trackViewer: Pick<TrackViewerState, 'eleSmoothingFactor'>;
-  language: string | null;
-  routePlanner: Pick<RoutePlannerState, 'transportType'>;
 }
 
 export type StringDates<T> = {
@@ -75,7 +61,7 @@ export interface OsmWay extends OsmElement {
 
 export interface OsmRelation extends OsmElement {
   type: 'relation';
-  members: { type: 'node' | 'way' | 'relation'; ref: number }[];
+  members: { type: 'node' | 'way' | 'relation'; ref: number; role?: string }[];
 }
 
 export interface OsmResult {
@@ -84,9 +70,7 @@ export interface OsmResult {
 
 interface OverpassElementBase {
   id: number;
-  tags: {
-    [key: string]: string;
-  };
+  tags: Record<string, string>;
 }
 
 interface OverpassNodeElement extends OverpassElementBase, LatLon {

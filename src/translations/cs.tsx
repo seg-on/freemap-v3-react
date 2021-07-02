@@ -1,12 +1,17 @@
 /* eslint-disable */
 
 import { ChangesetDetails } from 'fm3/components/ChangesetDetails';
-import { RoadDetails } from 'fm3/components/RoadDetails';
+import { CookieConsent } from 'fm3/components/CookieConsent';
+import {
+  ObjectDetailBasicProps,
+  ObjectDetails,
+} from 'fm3/components/ObjectDetails';
 import { TrackViewerDetails } from 'fm3/components/TrackViewerDetails';
 import { latLonToString } from 'fm3/geoutils';
 import { Fragment } from 'react';
 import Alert from 'react-bootstrap/Alert';
-import { FaFlask, FaKey } from 'react-icons/fa';
+import { FaKey } from 'react-icons/fa';
+import shared from './cs-shared.json';
 import { Messages } from './messagesInterface';
 
 const nf01 = Intl.NumberFormat('cs', {
@@ -38,6 +43,8 @@ const getErrorMarkup = (ticketId?: string) => `<h1>Chyba aplikace</h1>
 </p>
 `;
 
+const outdoorMap = 'Turistika, Cyklo, Běžky, Jízda';
+
 const cs: Messages = {
   general: {
     iso: 'cs_CZ',
@@ -66,6 +73,7 @@ const cs: Messages = {
     minutes: 'minuty',
     meters: 'metre',
     createdAt: 'Vytvořeno',
+    modifiedAt: 'Změněno',
     actions: 'Akce',
     add: 'Přidat nové',
     clear: 'Vyčistit',
@@ -73,12 +81,19 @@ const cs: Messages = {
     simplifyPrompt:
       'Prosím zadejte faktor zjednodušení. Zadejte nulu pro vynechání zjednodušení.',
     copyUrl: 'Kopírovat URL',
+    copyPageUrl: 'Kopírovat URL stránky',
     savingError: ({ err }) => `Chyba ukládání: ${err}`,
     loadError: ({ err }) => `Chyba nahrávání: ${err}`,
     deleteError: ({ err }) => `Chyba pří mazání: ${err}`,
+    operationError: ({ err }) => `Operation error: ${err}`,
     deleted: 'Smazané.',
     saved: 'Uložené.',
     visual: 'Zobrazení',
+    copyOk: 'Zkopírováno do schránky.',
+    noCookies: 'Tato funkcionalita vyžaduje přijetí souhlasu cookies.',
+    name: 'Název',
+    load: 'Načíst',
+    unnamed: 'Bez názvu',
   },
 
   selections: {
@@ -87,6 +102,8 @@ const cs: Messages = {
     drawLines: 'Čára',
     drawPolygons: 'Polygón',
     tracking: 'Sledování',
+    linePoint: 'Line point', // TODO translate
+    polygonPoint: 'Polygon point', // TODO translate
   },
 
   tools: {
@@ -103,11 +120,7 @@ const cs: Messages = {
     changesets: 'Změny mapě',
     mapDetails: 'Detaily v mapě',
     tracking: 'Sledování',
-    maps: (
-      <>
-        Moje mapy <FaFlask className="text-warning" />
-      </>
-    ),
+    maps: 'Moje mapy',
   },
 
   routePlanner: {
@@ -324,8 +337,8 @@ const cs: Messages = {
     imhdAttribution: 'trasy linek MHD',
   },
 
-  more: {
-    more: 'Další',
+  mainMenu: {
+    title: 'Hlavní menu',
     logOut: (name) => `Odhlásit ${name}`,
     logIn: 'Přihlášení',
     settings: 'Nastavení',
@@ -344,9 +357,13 @@ const cs: Messages = {
     github: 'Freemap na GitHub-u',
     automaticLanguage: 'Automaticky',
     pdfExport: 'Exportovat mapu',
+    osmWiki: 'Dokumentační projekt OpenStreetMap ',
+    wikiLink: 'https://wiki.openstreetmap.org/wiki/Cs:Main_Page',
   },
 
   main: {
+    title: shared.title,
+    description: shared.description,
     clearMap: 'Vyčistit mapu',
     close: 'Zavřít',
     closeTool: 'Zavřít nástroj',
@@ -360,7 +377,14 @@ const cs: Messages = {
         přejděte na <a href="https://www.freemap.sk/">www.freemap.sk</a>.
       </div>
     ),
-    copyright: 'Licence',
+    copyright: 'Licence mapy',
+    cookieConsent: () => (
+      <CookieConsent
+        prompt="Některé funkce mohou vyžadovat cookies. Přijmout:"
+        local="Cookies lokálních nastavení a přihlášení pomocí sociálních sítí"
+        analytics="Analytické cookies"
+      />
+    ),
   },
 
   gallery: {
@@ -375,6 +399,16 @@ const cs: Messages = {
       lastCaptured: 'od nejnovější vyfocené',
       leastRated: 'od nejmenšího hodnocení',
       mostRated: 'od největšího hodnocení',
+      lastComment: 'od posledného komentára', // TODO translate
+    },
+    colorizeBy: 'Vyfarbiť podľa', // TODO translate
+    c: {
+      disable: 'nevyfarbiť', // TODO translate
+      mine: 'odlíšiť moje', // TODO translate
+      author: 'autora', // TODO translate
+      rating: 'hodnotenia', // TODO translate
+      takenAt: 'dátumu odfotenia', // TODO translate
+      createdAt: 'dátumu nahrania', // TODO translate
     },
     viewer: {
       title: 'Fotografie',
@@ -451,6 +485,7 @@ const cs: Messages = {
       rating: 'Hodnocení',
       noTags: 'bez tagů',
     },
+    noPicturesFound: 'Na tomto místě nebyly nalezeny žádné fotky.',
   },
 
   measurement: {
@@ -518,7 +553,8 @@ const cs: Messages = {
       title: 'Nahrát trasu',
       drop: 'Přetáhněte sem .gpx soubor, nebo sem klikněte pro jeho výběr.',
     },
-    shareToast: 'Trasa byla uložena na server a můžete ji sdílet.',
+    shareToast:
+      'Trasa byla uložena na server a můžete ji sdílet zkopírovaním URL stránky.',
     fetchingError: ({ err }) =>
       `Nastala chyba při získávání záznamu trasy: ${err}`,
     savingError: ({ err }) => `Nepodařilo se uložit trasu: ${err}`,
@@ -536,6 +572,11 @@ const cs: Messages = {
       label: 'Popis:',
       hint: 'Pokud chcete popis odstránit, nechte pole popisu prázdné.',
     },
+    continue: 'Continue', // TODO translate
+    join: 'Join', // TODO translate
+    split: 'Split', // TODO translate
+    stopDrawing: 'Stop drawing', // TODO translate
+    selectPointToJoin: 'Select point to join lines', // TODO translate
   },
 
   settings: {
@@ -557,6 +598,16 @@ const cs: Messages = {
       name: 'Jméno',
       email: 'E-Mail',
       noAuthInfo: 'Dostupné pouze pro přihlášené uživatele.',
+      sendGalleryEmails: 'Upozorni emailem na komentáře k fotce',
+      DeleteInfo: () => (
+        <>
+          Pokud si přejete smazat svůj účet, kontaktujte nás prosím na{' '}
+          <Alert.Link href="mailto:freemap@freemap.sk">
+            freemap@freemap.sk
+          </Alert.Link>
+          .
+        </>
+      ),
     },
     general: {
       tips: 'Zobrazovat tipy po otevření stránky',
@@ -577,8 +628,7 @@ const cs: Messages = {
       trackViewerEleSmoothing: {
         label: (value) =>
           `Úroveň vyhlazování při výpočtu celkové nastoupaných / naklesaných metrů v prohlížeči tras: ${value}`,
-        info:
-          'Při hodnotě 1 se berou v úvahu všechny nadmořské výšky samostatně. Vyšší hodnoty odpovídají šířce plovoucího okna kterým se vyhlazují nadmořské výšky. ',
+        info: 'Při hodnotě 1 se berou v úvahu všechny nadmořské výšky samostatně. Vyšší hodnoty odpovídají šířce plovoucího okna kterým se vyhlazují nadmořské výšky. ',
       },
     },
     saveSuccess: 'Změny byly uloženy.',
@@ -608,11 +658,17 @@ const cs: Messages = {
   },
 
   mapDetails: {
-    road: 'Info o cestě',
     notFound: 'Nebyla nalezena žádná cesta.',
     fetchingError: ({ err }) =>
       `Nastala chyba při získávání detailů o cestě: ${err}`,
-    detail: ({ element }) => <RoadDetails way={element} />,
+    detail: (props: ObjectDetailBasicProps) => (
+      <ObjectDetails
+        {...props}
+        openText="Otevřít na OpenStreetMap.org"
+        historyText="historie"
+        editInJosmText="Editovat v JOSM"
+      />
+    ),
   },
 
   objects: {
@@ -1022,7 +1078,7 @@ const cs: Messages = {
       p: 'OpenTopoMap',
       d: 'Veřejná doprava (ÖPNV)',
       h: 'Historická',
-      X: 'Turistika + Cyklo + Běžky',
+      X: outdoorMap,
       i: 'Interaktivní vrstva',
       I: 'Fotografie',
       l: 'Lesní cesty NLC (SK)',
@@ -1040,6 +1096,8 @@ const cs: Messages = {
       s3: 'Strava (Vodní aktivity)',
       s4: 'Strava (Zimní aktivity)',
       w: 'Wikipedia',
+      '4': 'Světlé stínování DMR 5.0',
+      '5': 'Šedé stínování DMR 5.0',
     },
     type: {
       map: 'mapa',
@@ -1144,6 +1202,8 @@ const cs: Messages = {
           Sleduj zařízení <i>{name}</i>
         </>
       ),
+      storageWarning:
+        'Pozor, seznam zařízení je promítnut pouze do URL stránky. Pokud si ho přejete uložit, využijte funkci "Moje mapy".',
     },
     accessToken: {
       token: 'Sledovací token',
@@ -1160,10 +1220,10 @@ const cs: Messages = {
         </>
       ),
       desc: (deviceName) => (
-        <p>
+        <>
           Vytvořte sledovací tokeny, abyste mohli sdílet polohu{' '}
           <i>{deviceName}</i> s přáteli.
-        </p>
+        </>
       ),
       createTitle: (deviceName) => (
         <>
@@ -1335,7 +1395,9 @@ const cs: Messages = {
       <>
         Upozornění:
         <ul>
-          <li>Exportuje se nová outdoorová mapa.</li>
+          <li>
+            Exportuje se mapa <i>{outdoorMap}</i>.
+          </li>
           <li>Export mapy může trvat i desítky sekund.</li>
           <li>
             Při publikované mapy je do ní nutno uvést její licenci:
@@ -1373,25 +1435,45 @@ const cs: Messages = {
   },
 
   maps: {
-    noMap: 'Žádná mapa',
-    create: 'Uložit jako…',
+    noMapFound: 'Žádná mapa nenalezena',
     save: 'Uložit',
-    rename: 'Přejmenovat',
     delete: 'Smazat',
-    namePrompt: 'Název mapy:',
-    deleteConfirm: 'Opravdu si přejete smazat tuto mapu?',
+    disconnect: 'Odpojiť',
+    deleteConfirm: (name) => `Opravdu si přejete smazat mapu ${name}?`,
     fetchError: ({ err }) => `Nastala chyba při nahrávání mapy: ${err}`,
     fetchListError: ({ err }) => `Nastala chyba při nahrávání map: ${err}`,
     deleteError: ({ err }) => `Nastala chyba při mazání mapy: ${err}`,
     renameError: ({ err }) => `Nastala chyba při přejmenování mapy: ${err}`,
     createError: ({ err }) => `Nastala chyba při ukládání mapy: ${err}`,
     saveError: ({ err }) => `Nastala chyba při ukládání mapy: ${err}`,
+    loadToEmpty: 'Načíst do čisté mapy',
+    loadInclMapAndPosition:
+      'Načíst včetně uložené podkladových mapy a jej pozice',
+    savedMaps: 'Uložené mapy',
+    newMap: 'Nová mapa',
+    SomeMap: ({ name }) => (
+      <>
+        Mapa <i>{name}</i>
+      </>
+    ),
+    unauthenticatedError: 'Pro funkci Moje mapy musíte být přihlášen.',
+  },
+
+  mapCtxMenu: {
+    centerMap: 'Vycentrovat mapu',
+    measurePosition: 'Měřit pozici',
+    addPoint: 'Přidat bod',
+    startLine: 'Začít čáru',
+    queryFeatures: 'Zjistit detaily',
+    startRoute: 'Začít trasu',
+    finishRoute: 'Ukončit trasu',
+    showPhotos: 'Ukázat fotky',
   },
 
   legend: {
     body: () => (
       <>
-        Legenda k mapě <i>Turistika + Cyklo + Běžky</i>:
+        Legenda k mapě <i>{outdoorMap}</i>:
       </>
     ),
   },

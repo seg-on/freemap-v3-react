@@ -21,7 +21,15 @@ export type GalleryListOrder =
   | '+takenAt'
   | '-takenAt'
   | '+rating'
-  | '-rating';
+  | '-rating'
+  | '-lastCommentedAt';
+
+export type GalleryColorizeBy =
+  | 'userId'
+  | 'takenAt'
+  | 'createdAt'
+  | 'rating'
+  | 'mine';
 
 export interface GalleryTag {
   name: string;
@@ -118,9 +126,8 @@ export const gallerySetLayerDirty = createAction('GALLERY_SET_LAYER_DIRTY')();
 
 export const gallerySetTags = createAction('GALLERY_SET_TAGS')<GalleryTag[]>();
 
-export const gallerySetUsers = createAction('GALLERY_SET_USERS')<
-  GalleryUser[]
->();
+export const gallerySetUsers =
+  createAction('GALLERY_SET_USERS')<GalleryUser[]>();
 
 export const gallerySetComment = createAction('GALLERY_SET_COMMENT')<string>();
 
@@ -150,17 +157,16 @@ export const galleryHideUploadModal = createAction(
   'GALLERY_HIDE_UPLOAD_MODAL',
 )();
 
-export const gallerySetFilter = createAction(
-  'GALLERY_SET_FILTER',
-)<GalleryFilter>();
+export const gallerySetFilter =
+  createAction('GALLERY_SET_FILTER')<GalleryFilter>();
 
 export const gallerySavePicture = createAction('GALLERY_SAVE_PICTURE')();
 
 export const galleryList = createAction('GALLERY_LIST')<GalleryListOrder>();
 
-export const galleryPreventLayerHint = createAction(
-  'GALLERY_PREVENT_LAYER_HINT',
-)();
+export const galleryColorizeBy = createAction(
+  'GALLERY_COLORIZE_BY',
+)<GalleryColorizeBy | null>();
 
 export const galleryToggleShowPreview = createAction(
   'GALLERY_TOGGLE_SHOW_PREVIEW',

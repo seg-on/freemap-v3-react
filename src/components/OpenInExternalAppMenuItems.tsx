@@ -1,6 +1,18 @@
 import { ExternalTargets, openInExternalApp } from 'fm3/actions/mainActions';
+import {
+  getGoogleUrl,
+  getHikingSkUrl,
+  getIdUrl,
+  getMapillaryUrl,
+  getMapyCzUrl,
+  getOmaUrl,
+  getOpenStreetCamUrl,
+  getOsmUrl,
+  getPeakfinderUrl,
+  getTwitterUrl,
+  getZbgisUrl,
+} from 'fm3/externalUrlUtils';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import { LatLon } from 'fm3/types/common';
 import { ReactElement, useCallback } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -24,7 +36,7 @@ interface Props extends LatLon {
   pointTitle?: string;
   pointDescription?: string;
   url?: string;
-  onSelect?: (where: string) => void;
+  onSelect?: () => void;
   showKbdShortcut?: boolean;
 }
 
@@ -44,15 +56,13 @@ export function OpenInExternalAppDropdownItems({
 
   const dispatch = useDispatch();
 
-  const expertMode = useSelector((state: RootState) => state.main.expertMode);
+  const expertMode = useSelector((state) => state.main.expertMode);
 
-  const handleDropdownItemSelect = useCallback(
+  const handleSelect = useCallback(
     (where: string | null) => {
-      if (is<ExternalTargets>(where)) {
-        if (onSelect) {
-          onSelect(where);
-        }
+      onSelect?.();
 
+      if (is<ExternalTargets>(where)) {
         dispatch(
           openInExternalApp({
             where,
@@ -83,22 +93,23 @@ export function OpenInExternalAppDropdownItems({
   );
 
   const hasShare = 'share' in navigator;
+
   const hasClipboard = navigator.clipboard?.writeText;
 
   return (
     <>
       {url && (
         <>
-          <Dropdown.Item eventKey="window" onSelect={handleDropdownItemSelect}>
+          <Dropdown.Item href={url} target="_blank" onSelect={handleSelect}>
             <FaWindowMaximize /> {m?.external.window}
           </Dropdown.Item>
           {hasShare && (
-            <Dropdown.Item eventKey="url" onSelect={handleDropdownItemSelect}>
+            <Dropdown.Item as="button" eventKey="url" onSelect={handleSelect}>
               <FaLink /> {m?.external.url}
             </Dropdown.Item>
           )}
           {(navigator as any).canShare && (
-            <Dropdown.Item eventKey="image" onSelect={handleDropdownItemSelect}>
+            <Dropdown.Item as="button" eventKey="image" onSelect={handleSelect}>
               <FaShareAlt /> {m?.external.image}
             </Dropdown.Item>
           )}
@@ -106,8 +117,8 @@ export function OpenInExternalAppDropdownItems({
         </>
       )}
       {!url && hasClipboard && (
-        <Dropdown.Item eventKey="copy" onSelect={handleDropdownItemSelect}>
-          <FaClipboard /> {m?.general.copyUrl}
+        <Dropdown.Item as="button" eventKey="copy" onSelect={handleSelect}>
+          <FaClipboard /> {m?.general.copyPageUrl}
           {showKbdShortcut && (
             <>
               {' '}
@@ -117,12 +128,12 @@ export function OpenInExternalAppDropdownItems({
         </Dropdown.Item>
       )}
       {!url && hasShare && (
-        <Dropdown.Item eventKey="url" onSelect={handleDropdownItemSelect}>
+        <Dropdown.Item as="button" eventKey="url" onSelect={handleSelect}>
           <FaLink /> {m?.external.url}
         </Dropdown.Item>
       )}
       {!url && (hasClipboard || hasShare) && <Dropdown.Divider />}
-      <Dropdown.Item eventKey="facebook" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item as="button" eventKey="facebook" onSelect={handleSelect}>
         <FaFacebook /> Facebook
         {showKbdShortcut && (
           <>
@@ -131,7 +142,12 @@ export function OpenInExternalAppDropdownItems({
           </>
         )}
       </Dropdown.Item>
-      <Dropdown.Item eventKey="twitter" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item
+        href={getTwitterUrl()}
+        target="_blank"
+        eventKey="twitter"
+        onSelect={handleSelect}
+      >
         <FaTwitter /> Twitter
         {showKbdShortcut && (
           <>
@@ -141,7 +157,11 @@ export function OpenInExternalAppDropdownItems({
         )}
       </Dropdown.Item>
       <Dropdown.Divider />
-      <Dropdown.Item eventKey="osm.org" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item
+        href={getOsmUrl(lat, lon, zoom, includePoint)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
         {m?.external.osm}
         {showKbdShortcut && (
           <>
@@ -150,7 +170,11 @@ export function OpenInExternalAppDropdownItems({
           </>
         )}
       </Dropdown.Item>
-      <Dropdown.Item eventKey="mapy.cz" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item
+        href={getMapyCzUrl(lat, lon, zoom, includePoint)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
         {m?.external.mapy_cz}
         {showKbdShortcut && (
           <>
@@ -159,7 +183,11 @@ export function OpenInExternalAppDropdownItems({
           </>
         )}
       </Dropdown.Item>
-      <Dropdown.Item eventKey="google" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item
+        href={getGoogleUrl(lat, lon, zoom, includePoint)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
         {m?.external.googleMaps}
         {showKbdShortcut && (
           <>
@@ -168,19 +196,51 @@ export function OpenInExternalAppDropdownItems({
           </>
         )}
       </Dropdown.Item>
-      <Dropdown.Item eventKey="mapillary" onSelect={handleDropdownItemSelect}>
-        Mapillary
+      <Dropdown.Item
+        href={getPeakfinderUrl(lat, lon)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
+        Peakfinder
+        {showKbdShortcut && (
+          <>
+            {' '}
+            <kbd>j</kbd> <kbd>p</kbd>
+          </>
+        )}
       </Dropdown.Item>
       <Dropdown.Item
-        eventKey="openstreetcam"
-        onSelect={handleDropdownItemSelect}
+        href={getMapillaryUrl(lat, lon, zoom)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
+        Mapillary
+        {showKbdShortcut && (
+          <>
+            {' '}
+            <kbd>j</kbd> <kbd>l</kbd>
+          </>
+        )}
+      </Dropdown.Item>
+      <Dropdown.Item
+        href={getOpenStreetCamUrl(lat, lon, zoom)}
+        target="_blank"
+        onSelect={handleSelect}
       >
         OpenStreetCam
       </Dropdown.Item>
-      <Dropdown.Item eventKey="oma.sk" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item
+        href={getOmaUrl(lat, lon, zoom, mapType)}
+        targer="_blank"
+        onSelect={handleSelect}
+      >
         {m?.external.oma} (SK)
       </Dropdown.Item>
-      <Dropdown.Item eventKey="hiking.sk" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item
+        href={getHikingSkUrl(lat, lon, zoom, includePoint)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
         {m?.external.hiking_sk} (SK)
         {showKbdShortcut && (
           <>
@@ -188,8 +248,12 @@ export function OpenInExternalAppDropdownItems({
             <kbd>j</kbd> <kbd>h</kbd>
           </>
         )}
-      </Dropdown.Item>{' '}
-      <Dropdown.Item eventKey="zbgis" onSelect={handleDropdownItemSelect}>
+      </Dropdown.Item>
+      <Dropdown.Item
+        href={getZbgisUrl(lat, lon, zoom)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
         {m?.external.zbgis} (SK)
         {showKbdShortcut && (
           <>
@@ -200,7 +264,7 @@ export function OpenInExternalAppDropdownItems({
       </Dropdown.Item>
       <Dropdown.Divider />
       {expertMode && (
-        <Dropdown.Item eventKey="josm" onSelect={handleDropdownItemSelect}>
+        <Dropdown.Item as="button" eventKey="josm" onSelect={handleSelect}>
           {m?.external.josm}
           {showKbdShortcut && (
             <>
@@ -210,7 +274,11 @@ export function OpenInExternalAppDropdownItems({
           )}
         </Dropdown.Item>
       )}
-      <Dropdown.Item eventKey="osm.org/id" onSelect={handleDropdownItemSelect}>
+      <Dropdown.Item
+        href={getIdUrl(lat, lon, zoom)}
+        target="_blank"
+        onSelect={handleSelect}
+      >
         {m?.external.id}
         {showKbdShortcut && (
           <>

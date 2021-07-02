@@ -1,6 +1,5 @@
 import { wikiLoadPreview } from 'fm3/actions/wikiActions';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import { Icon } from 'leaflet';
 import { ReactElement } from 'react';
 import { render } from 'react-dom';
@@ -30,7 +29,7 @@ class WikiIcon extends Icon {
   }
 
   createShadow(oldIcon?: HTMLElement) {
-    return oldIcon || ((null as any) as HTMLElement);
+    return oldIcon || (null as any as HTMLElement);
   }
 }
 
@@ -46,9 +45,9 @@ const wikiIcon = new WikiIcon({
 export function WikiLayer(): ReactElement {
   const m = useMessages();
 
-  const points = useSelector((state: RootState) => state.wiki.points);
+  const points = useSelector((state) => state.wiki.points);
 
-  const preview = useSelector((state: RootState) => state.wiki.preview);
+  const preview = useSelector((state) => state.wiki.preview);
 
   const dispatch = useDispatch();
 

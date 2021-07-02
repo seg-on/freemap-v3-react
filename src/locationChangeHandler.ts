@@ -11,6 +11,8 @@ import {
 } from 'fm3/actions/drawingPointActions';
 import {
   galleryClear,
+  galleryColorizeBy,
+  GalleryColorizeBy,
   GalleryFilter,
   galleryHideFilter,
   galleryHideUploadModal,
@@ -24,6 +26,7 @@ import {
   setActiveModal,
   setEmbedFeatures,
   setTool,
+  ShowModal,
   Tool,
 } from 'fm3/actions/mainActions';
 import { mapRefocus } from 'fm3/actions/mapActions';
@@ -46,18 +49,19 @@ import {
   getInfoPointDetailsIfIsOldEmbeddedFreemapUrlFormat2,
   getTrasformedParamsIfIsOldEmbeddedFreemapUrl,
 } from 'fm3/oldFreemapUtils';
-import refModals from 'fm3/refModals.json';
-import { tips } from 'fm3/tips';
+import { TipKey } from 'fm3/tips';
 import { getMapStateDiffFromUrl, getMapStateFromUrl } from 'fm3/urlMapUtils';
 import { Location } from 'history';
 import queryString, { ParsedQuery } from 'query-string';
+import { DefaultRootState } from 'react-redux';
 import { Dispatch } from 'redux';
 import { is } from 'typescript-is';
 import { RootAction } from './actions';
 import { mapsLoad } from './actions/mapsActions';
 import { searchSetQuery } from './actions/searchActions';
 import { trackingActions } from './actions/trackingActions';
-import { MyStore, RootState } from './storeCreator';
+import { basicModals, tools } from './constants';
+import { MyStore } from './storeCreator';
 import { isTransportType } from './transportTypeDefs';
 import { LatLon } from './types/common';
 import { TrackedDevice } from './types/trackingTypes';
@@ -75,9 +79,8 @@ export const handleLocationChange = (
   const parsedQuery = queryString.parse(search);
 
   const id =
-    (typeof parsedQuery['id'] === 'string'
-      ? parseInt(parsedQuery['id'], 10)
-      : undefined) || undefined;
+    (typeof parsedQuery['id'] === 'string' ? parsedQuery['id'] : undefined) ||
+    undefined;
 
   if (id !== getState().maps.id) {
     dispatch(
@@ -127,14 +130,8 @@ export const handleLocationChange = (
       isTransportType(query['transport']) &&
       pointsOk
     ) {
-      const {
-        start,
-        finish,
-        midpoints,
-        transportType,
-        mode,
-        milestones,
-      } = getState().routePlanner;
+      const { start, finish, midpoints, transportType, mode, milestones } =
+        getState().routePlanner;
 
       const latLons = points
         .map((point) => (point ? { lat: point[0], lon: point[1] } : null))
@@ -200,8 +197,8 @@ export const handleLocationChange = (
       ? 'draw-polygons'
       : query['tool'] === 'measure-dist'
       ? 'draw-lines'
-      : is<Tool>(query['tool'])
-      ? query['tool']
+      : tools.includes(query['tool'] as Tool)
+      ? (query['tool'] as Tool)
       : null;
 
   if (getState().main.tool !== tool) {
@@ -319,20 +316,20 @@ export const handleLocationChange = (
   const osmNode = query['osm-node'];
   const osmNodeId = typeof osmNode === 'string' && parseInt(osmNode, 10);
   if (osmNodeId) {
-    if (osmNodeId !== getState().trackViewer.osmNodeId) {
+    if (osmNodeId !== getState().search.osmNodeId) {
       dispatch(osmLoadNode(osmNodeId));
     }
-  } else if (getState().trackViewer.osmNodeId) {
+  } else if (getState().search.osmNodeId) {
     dispatch(osmClear());
   }
 
   const osmWay = query['osm-way'];
   const osmWayId = typeof osmWay === 'string' && parseInt(osmWay, 10);
   if (osmWayId) {
-    if (osmWayId !== getState().trackViewer.osmWayId) {
+    if (osmWayId !== getState().search.osmWayId) {
       dispatch(osmLoadWay(osmWayId));
     }
-  } else if (getState().trackViewer.osmWayId) {
+  } else if (getState().search.osmWayId) {
     dispatch(osmClear());
   }
 
@@ -341,10 +338,10 @@ export const handleLocationChange = (
     typeof osmRelation === 'string' && parseInt(osmRelation, 10);
 
   if (osmRelationId) {
-    if (osmRelationId !== getState().trackViewer.osmRelationId) {
+    if (osmRelationId !== getState().search.osmRelationId) {
       dispatch(osmLoadRelation(osmRelationId));
     }
-  } else if (getState().trackViewer.osmRelationId) {
+  } else if (getState().search.osmRelationId) {
     dispatch(osmClear());
   }
 
@@ -360,21 +357,18 @@ export const handleLocationChange = (
   }
 
   const activeModal = getState().main.activeModal;
-  if (typeof query['show'] === 'string' && refModals.includes(query['show'])) {
-    if (query['show'] !== activeModal) {
-      dispatch(setActiveModal(query['show']));
+
+  const { show } = query;
+
+  if (is<ShowModal>(show) && show) {
+    if (show !== activeModal) {
+      dispatch(setActiveModal(show));
     }
-  } else if (
-    typeof activeModal === 'string' &&
-    refModals.includes(activeModal)
-  ) {
+  } else if (is<ShowModal>(activeModal) && basicModals.includes(activeModal)) {
     dispatch(setActiveModal(null));
   }
 
-  if (
-    typeof query['tip'] === 'string' &&
-    is<typeof tips[number][0]>(query['tip'])
-  ) {
+  if (typeof query['tip'] === 'string' && is<TipKey>(query['tip'])) {
     if (
       getState().main.activeModal !== 'tips' ||
       getState().tips.tip !== query['tip']
@@ -408,8 +402,7 @@ export const handleLocationChange = (
   const parsedTd: TrackedDevice[] = [];
 
   for (const tracking of trackings) {
-    const [id0, ...parts] = tracking.split('/');
-    const id = /^\d+$/.test(id0) ? Number.parseInt(id0) : id0;
+    const [id, ...parts] = tracking.split('/');
     let fromTime: Date | null = null;
     let maxAge: number | null = null;
     let maxCount: number | null = null;
@@ -458,7 +451,7 @@ export const handleLocationChange = (
     }
 
     parsedTd.push({
-      id,
+      token: id,
       fromTime,
       maxAge,
       maxCount,
@@ -503,7 +496,7 @@ export const handleLocationChange = (
 // TODO use some generic deep compare fn
 function trackedDevicesEquals(td1: TrackedDevice, td2: TrackedDevice): boolean {
   return (
-    td1.id === td2.id &&
+    td1.token === td2.token &&
     td1.fromTime?.getTime() === td2.fromTime?.getTime() &&
     td1.maxAge === td2.maxAge &&
     td1.maxCount === td2.maxCount &&
@@ -512,24 +505,31 @@ function trackedDevicesEquals(td1: TrackedDevice, td2: TrackedDevice): boolean {
 }
 
 function handleGallery(
-  getState: () => RootState,
+  getState: () => DefaultRootState,
   dispatch: Dispatch<RootAction>,
   query: ParsedQuery<string>,
 ) {
   let a = query['gallery-user-id'];
   const qUserId = typeof a === 'string' ? parseInt(a, 10) : undefined;
+
   a = query['gallery-tag'];
   const qGalleryTag = typeof a === 'string' ? a : undefined;
+
   a = query['gallery-rating-from'];
   const qRatingFrom = typeof a === 'string' ? parseFloat(a) : undefined;
+
   a = query['gallery-rating-to'];
   const qRatingTo = typeof a === 'string' ? parseFloat(a) : undefined;
+
   a = query['gallery-taken-at-from'];
   const qTakenAtFrom = typeof a === 'string' ? new Date(a) : undefined;
+
   a = query['gallery-taken-at-to'];
   const qTakenAtTo = typeof a === 'string' ? new Date(a) : undefined;
+
   a = query['gallery-created-at-from'];
   const qCreatedAtFrom = typeof a === 'string' ? new Date(a) : undefined;
+
   a = query['gallery-created-at-to'];
   const qCreatedAtTo = typeof a === 'string' ? new Date(a) : undefined;
 
@@ -548,15 +548,19 @@ function handleGallery(
     if (qUserId && filter.userId !== qUserId) {
       newFilter.userId = qUserId;
     }
+
     if (typeof qGalleryTag === 'string' && filter.tag !== qGalleryTag) {
       newFilter.tag = qGalleryTag;
     }
+
     if (qRatingFrom && filter.ratingFrom !== qRatingFrom) {
       newFilter.ratingFrom = qRatingFrom;
     }
+
     if (qRatingTo && filter.ratingTo !== qRatingTo) {
       newFilter.ratingTo = qRatingTo;
     }
+
     if (
       qTakenAtFrom &&
       (filter.takenAtFrom ? filter.takenAtFrom.getTime() : NaN) !==
@@ -564,6 +568,7 @@ function handleGallery(
     ) {
       newFilter.takenAtFrom = qTakenAtFrom;
     }
+
     if (
       qTakenAtTo &&
       (filter.takenAtTo ? filter.takenAtTo.getTime() : NaN) !==
@@ -571,6 +576,7 @@ function handleGallery(
     ) {
       newFilter.takenAtTo = qTakenAtTo;
     }
+
     if (
       qCreatedAtFrom &&
       (filter.createdAtFrom ? filter.createdAtFrom.getTime() : NaN) !==
@@ -578,6 +584,7 @@ function handleGallery(
     ) {
       newFilter.createdAtFrom = qCreatedAtFrom;
     }
+
     if (
       qCreatedAtTo &&
       (filter.createdAtTo ? filter.createdAtTo.getTime() : NaN) !==
@@ -591,7 +598,8 @@ function handleGallery(
   }
 
   if (typeof query['image'] === 'string') {
-    const imageId = parseInt(query['image'], 10);
+    const imageId = Number(query['image']);
+
     if (getState().gallery.activeImageId !== imageId) {
       dispatch(galleryRequestImage(imageId));
     }
@@ -614,10 +622,16 @@ function handleGallery(
   } else if (getState().gallery.showUploadModal) {
     dispatch(galleryHideUploadModal());
   }
+
+  const cb = query['gallery-cb'];
+
+  if (cb && is<GalleryColorizeBy>(cb)) {
+    dispatch(galleryColorizeBy(cb));
+  }
 }
 
 function handleInfoPoint(
-  getState: () => RootState,
+  getState: () => DefaultRootState,
   dispatch: Dispatch,
   query: queryString.ParsedQuery<string>,
 ) {
@@ -626,11 +640,12 @@ function handleInfoPoint(
 
   const emp = query['elevation-measurement-point']; // for compatibility
 
-  const ips = (!drawingPoint
-    ? []
-    : Array.isArray(drawingPoint)
-    ? drawingPoint
-    : [drawingPoint]
+  const ips = (
+    !drawingPoint
+      ? []
+      : Array.isArray(drawingPoint)
+      ? drawingPoint
+      : [drawingPoint]
   )
     .concat(typeof emp === 'string' ? [emp] : [])
     .map((ip) => /^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)[,;]?(.*)$/.exec(ip)) // comma (,) is for compatibility

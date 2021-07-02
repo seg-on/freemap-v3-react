@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+  <head>
+    <title><%= title %></title>
+
+    <meta charset="UTF-8" />
+
+    <meta name="robots" content="index, follow" />
+
+    <meta
+      name="copyright"
+      content="OZ Freemap Slovakia, http://www.freemap.sk/"
+    />
+    <meta name="description" content="<%= description %>" />
+    <meta property="og:description" content="<%= description %>" />
+    <meta name="author" content="Freemap Slovakia" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <meta
+      name="google-site-verification"
+      content="sbT_FygRVxqv1MyTmcynJH3dSq2sVlUBNqaxCvlECU4"
+    />
+    <meta property="fb:pages" content="2532592376985525" />
+    <meta
+      property="article:author"
+      content="https://www.facebook.com/FreemapSlovakia/"
+    />
+
+    <meta property="fb:app_id" content="171410630094006" />
+    <meta property="og:title" content="<%= title %>" />
+
+    <meta
+      property="og:image"
+      content="<%= process.env['BASE_URL'] + '/' + require('./images/logo.jpg') %>"
+    />
+    <meta property="og:image:width" content="600" />
+    <meta property="og:image:height" content="600" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="<%= process.env['BASE_URL'] + '/' %>" />
+
+    <meta http-equiv="Accept-CH" content="Width" />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="application-name" content="Freemap Slovakia" />
+
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+
+    <!-- prettier-ignore -->
+    <%=
+      [
+        '57x57',
+        '60x60',
+        '72x72',
+        '76x76',
+        '114x114',
+        '120x120',
+        '144x144',
+        '152x152',
+        '167x167',
+        '180x180',
+        '1024x1024',
+      ].map((dim) => `
+    <link
+      rel="apple-touch-icon"
+      sizes="${dim}"
+      href="/apple-touch-icon-${dim}.png"
+    />
+    `).join('') %>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Freemap" />
+    <!-- prettier-ignore -->
+    <%=
+      [
+        [320, 568, 2, 'portrait'],
+        [375, 667, 2, 'portrait'],
+        [414, 896, 2, 'portrait'],
+        [375, 812, 3, 'portrait'],
+        [414, 736, 3, 'portrait'],
+        [414, 896, 3, 'portrait'],
+        [768, 1024, 2, 'portrait'],
+        [834, 1112, 2, 'portrait'],
+        [834, 1194, 2, 'portrait'],
+        [1024, 1366, 2, 'portrait'],
+        [810, 1080, 2, 'portrait'],
+        [320, 568, 2, 'landscape'],
+        [375, 667, 2, 'landscape'],
+        [414, 896, 2, 'landscape'],
+        [375, 812, 3, 'landscape'],
+        [414, 736, 3, 'landscape'],
+        [414, 896, 3, 'landscape'],
+        [768, 1024, 2, 'landscape'],
+        [834, 1112, 2, 'landscape'],
+        [834, 1194, 2, 'landscape'],
+        [1024, 1366, 2, 'landscape'],
+        [810, 1080, 2, 'landscape']].map(([w, h, r, o]) => `
+    <link
+      rel="apple-touch-startup-image"
+      media="(device-width: ${w}px) and (device-height: ${h}px) and (-webkit-device-pixel-ratio: ${r}) and (orientation: ${o})"
+      href="/apple-touch-startup-image-${(o === 'portrait' ? w : h) * r}x${(o === 'portrait' ? h : w) * r}.png"
+    />
+    `).join('') %>
+
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <%= htmlWebpackPlugin.tags.headTags.filter((tag) => tag.tagName !==
+    'script').join('') %>
+
+    <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+
+    <script>
+      fmEmbedded = window.self !== window.top;
+
+      if (
+        window.TrackJS &&
+        !fmEmbedded &&
+        !navigator.userAgent.match(
+          /UCBrowser|PetalBot|YaBrowser|Applebot|Googlebot|AdsBot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou|ia_archiver/,
+        )
+      ) {
+        TrackJS.install({
+          token: '47a813b67baf4f97bace2d8359f76833',
+          onError: function (payload) {
+            return !/^Network error$|The operation is insecure|Only secure origins are allowed|Failed to register a ServiceWorker|flatMap is not a function/.test(
+              payload.message,
+            );
+          },
+        });
+      }
+    </script>
+
+    <% if (process.env['GA_MEASUREMENT_ID']) { %>
+
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=<%= process.env['GA_MEASUREMENT_ID'] %>"
+    ></script>
+
+    <script>
+      window.dataLayer = window.dataLayer || [];
+
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+
+      gtag('js', new Date());
+
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        analytics_storage: 'denied',
+      });
+
+      gtag('config', '<%= process.env["GA_MEASUREMENT_ID"] %>');
+    </script>
+
+    <% } else { %>
+
+    <script>
+      function gtag() {}
+    </script>
+
+    <% } %>
+
+    <!-- <script
+      data-ad-client="ca-pub-2465248996193624"
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+    ></script> -->
+
+    <% if (process.env['FB_APP_ID']) { %>
+
+    <!-- Facebook Pixel Code -->
+    <!-- prettier-ignore -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+
+      fbq.disablePushState = true;
+
+      fbq('consent', 'revoke');
+      fbq('init', '<%= process.env["FB_APP_ID"] %>');
+      fbq('track', 'PageView');
+    </script>
+
+    <% } else { %>
+
+    <script>
+      function fbq() {}
+    </script>
+
+    <% } %>
+
+    <!-- prettier-ignore -->
+    <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=681854635902254&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Facebook Pixel Code -->
+
+    <style>
+      #app,
+      .init-loader {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+      }
+    </style>
+
+    <script>
+      var langs = navigator.languages || [navigator.language];
+
+      var lang = langs
+        .map((lang) => lang.replace(/-.*/, ''))
+        .find((lang) => /^(en|sk|cs|hu)$/.test(lang));
+    </script>
+  </head>
+
+  <body>
+    <div id="app">
+      <div
+        id="init-loader"
+        style="
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          height: 100vh;
+        "
+      >
+        <div style="display: flex; flex-direction: column; align-items: center">
+          <div style="max-width: 200px; padding-bottom: 30px">
+            <img
+              src="freemap-logo.jpg"
+              style="width: 100%; vertical-align: center"
+            />
+          </div>
+          <div
+            style="
+              max-width: 400px;
+              text-align: center;
+              font-family: Arial, Helvetica, sans-serif;
+              line-height: 1;
+              margin-top: 0;
+            "
+          >
+            <%= loadingMessage %>
+
+            <noscript>
+              <div
+                style="
+                  margin: 20px;
+                  padding: 20px;
+                  border: 6px solid red;
+                  font-family: Arial, Helvetica, sans-serif;
+                "
+              >
+                <%= nojsMessage %>
+              </div>
+            </noscript>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% for (const css of htmlWebpackPlugin.files.css) { %>
+    <link itemprop="" rel="stylesheet" href="<%= css %>" />
+    <% } %>
+
+    <script>
+      var validate_startup = function (e) {
+        if (e) {
+          e.preventDefault();
+        }
+
+        var app = document.getElementById('app');
+
+        if (
+          !app.children ||
+          !app.children[0] ||
+          app.children[0].id === 'init-loader'
+        ) {
+          console.error('Startup error.', e);
+
+          app.innerHTML =
+            '<div style="margin: 20px; padding: 20px; border: 6px solid red; font-family: Arial, Helvetica, sans-serif;"><%= errorHtml %></div>';
+        }
+      };
+
+      window.addEventListener('error', validate_startup);
+
+      window.addEventListener('load', function () {
+        console.log('Page loaded.');
+
+        window.removeEventListener('error', validate_startup);
+
+        validate_startup();
+        delete validate_startup;
+      });
+
+      console.log('Pre-entry.');
+    </script>
+
+    <% for (const js of htmlWebpackPlugin.files.js) { %>
+    <script src="<%= js %>"></script>
+    <% } %>
+
+    <script>
+      console.log('Post-entry.');
+    </script>
+  </body>
+</html>

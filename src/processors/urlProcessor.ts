@@ -1,8 +1,9 @@
 import { drawingLineUpdatePoint } from 'fm3/actions/drawingLineActions';
+import { ShowModal } from 'fm3/actions/mainActions';
 import { mapRefocus } from 'fm3/actions/mapActions';
+import { basicModals } from 'fm3/constants';
 import { history } from 'fm3/historyHolder';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
-import refModals from 'fm3/refModals.json';
 import { tips as allTips } from 'fm3/tips';
 import { LatLon } from 'fm3/types/common';
 import { isActionOf } from 'typesafe-actions';
@@ -13,7 +14,6 @@ let lastActionType: string | undefined;
 let previous: unknown[] = [];
 
 export const urlProcessor: Processor = {
-  actionCreator: '*',
   handle: async ({ getState, action }) => {
     const {
       map,
@@ -29,6 +29,7 @@ export const urlProcessor: Processor = {
       auth,
       tracking,
       maps,
+      search,
     } = getState();
 
     if (!main.urlUpdatingEnabled) {
@@ -47,8 +48,7 @@ export const urlProcessor: Processor = {
       drawingPoints.points,
       main.activeModal,
       main.embedFeatures,
-      main.selection?.type,
-      main.selection?.id,
+      main.selection,
       main.urlUpdatingEnabled,
       map.lat,
       map.lon,
@@ -65,9 +65,9 @@ export const urlProcessor: Processor = {
       tracking.trackedDevices,
       trackViewer.colorizeTrackBy,
       trackViewer.gpxUrl,
-      trackViewer.osmNodeId,
-      trackViewer.osmRelationId,
-      trackViewer.osmWayId,
+      search.osmNodeId,
+      search.osmRelationId,
+      search.osmWayId,
       trackViewer.trackUID,
       maps.id,
       main.tool,
@@ -116,9 +116,7 @@ export const urlProcessor: Processor = {
           .join(',')}`,
       ]);
 
-      if (routePlanner.transportType) {
-        historyParts.push(['transport', routePlanner.transportType]);
-      }
+      historyParts.push(['transport', routePlanner.transportType]);
 
       if (routePlanner.mode !== 'route') {
         historyParts.push(['route-mode', routePlanner.mode]);
@@ -137,16 +135,16 @@ export const urlProcessor: Processor = {
       historyParts.push(['gpx-url', trackViewer.gpxUrl]);
     }
 
-    if (trackViewer.osmNodeId) {
-      historyParts.push(['osm-node', trackViewer.osmNodeId]);
+    if (search.osmNodeId && search.osmNodeId > 0) {
+      historyParts.push(['osm-node', search.osmNodeId]);
     }
 
-    if (trackViewer.osmWayId) {
-      historyParts.push(['osm-way', trackViewer.osmWayId]);
+    if (search.osmWayId) {
+      historyParts.push(['osm-way', search.osmWayId]);
     }
 
-    if (trackViewer.osmRelationId) {
-      historyParts.push(['osm-relation', trackViewer.osmRelationId]);
+    if (search.osmRelationId) {
+      historyParts.push(['osm-relation', search.osmRelationId]);
     }
 
     if (trackViewer.colorizeTrackBy) {
@@ -154,15 +152,15 @@ export const urlProcessor: Processor = {
     }
 
     if (gallery.activeImageId) {
-      historyParts.push(['image', gallery.activeImageId]);
+      queryParts.push(['image', gallery.activeImageId]);
     }
 
     if (changesets.days) {
-      historyParts.push(['changesets-days', changesets.days]);
+      queryParts.push(['changesets-days', changesets.days]);
     }
 
     if (changesets.authorName) {
-      historyParts.push(['changesets-author', changesets.authorName]);
+      queryParts.push(['changesets-author', changesets.authorName]);
     }
 
     if (drawingPoints.points.length) {
@@ -227,20 +225,17 @@ export const urlProcessor: Processor = {
       ]);
     }
 
-    if (main.activeModal && refModals.includes(main.activeModal)) {
-      historyParts.push(['show', main.activeModal]);
-    }
-
     if (gallery.showFilter) {
-      historyParts.push(['show', 'gallery-filter']);
-    }
-
-    if (gallery.showUploadModal) {
-      historyParts.push(['show', 'gallery-upload']);
-    }
-
-    if (auth.chooseLoginMethod) {
-      historyParts.push(['show', 'login']);
+      queryParts.push(['show', 'gallery-filter']);
+    } else if (gallery.showUploadModal) {
+      queryParts.push(['show', 'gallery-upload']);
+    } else if (auth.chooseLoginMethod) {
+      queryParts.push(['show', 'login']);
+    } else if (
+      is<ShowModal>(main.activeModal) &&
+      basicModals.includes(main.activeModal)
+    ) {
+      queryParts.push(['show', main.activeModal]);
     }
 
     if (
@@ -248,15 +243,15 @@ export const urlProcessor: Processor = {
       tips.tip &&
       is<typeof allTips[number][0]>(tips.tip)
     ) {
-      historyParts.push(['tip', tips.tip]);
+      queryParts.push(['tip', tips.tip]);
     }
 
     if (main.embedFeatures.length) {
-      historyParts.push(['embed', main.embedFeatures.join(',')]);
+      queryParts.push(['embed', main.embedFeatures.join(',')]);
     }
 
     for (const {
-      id,
+      token: id,
       label,
       color,
       width,
@@ -307,16 +302,16 @@ export const urlProcessor: Processor = {
       main.selection?.type === 'tracking' &&
       main.selection?.id !== undefined
     ) {
-      historyParts.push(['follow', main.selection?.id]);
+      queryParts.push(['follow', main.selection?.id]);
     }
 
     const sq = isMap ? serializeQuery(historyParts) : undefined;
 
-    const search = serializeQuery(queryParts);
+    const urlSearch = serializeQuery(queryParts);
 
     if (
       (isMap && sq !== history.location.state?.sq) ||
-      search !== window.location.search
+      urlSearch !== window.location.search
     ) {
       const method =
         lastActionType &&
@@ -327,13 +322,13 @@ export const urlProcessor: Processor = {
       history[method](
         {
           pathname: '/',
-          search: search,
+          search: urlSearch,
           hash: '',
         },
         { sq },
       );
 
-      if (window.parent !== window.self) {
+      if (window.fmEmbedded) {
         window.parent.postMessage(
           {
             freemap: {

@@ -1,30 +1,33 @@
 // import { errorSetError } from 'fm3/actions/errorActions';
-import { l10nSetChosenLanguage } from 'fm3/actions/l10nActions';
 import {
+  applyCookieConsent,
   enableUpdatingUrl,
-  setAppState,
   setEmbedFeatures,
 } from 'fm3/actions/mainActions';
 import { ErrorCatcher } from 'fm3/components/ErrorCatcher';
 import { Main } from 'fm3/components/Main';
 import 'fm3/fbLoader';
 import { setStore as setErrorHandlerStore } from 'fm3/globalErrorHandler';
-import 'fm3/googleAnalytics';
 import { history } from 'fm3/historyHolder';
 import { attachKeyboardHandler } from 'fm3/keyboardHandler';
 import { handleLocationChange } from 'fm3/locationChangeHandler';
 import { attachOsmLoginMessageHandler } from 'fm3/osmLoginMessageHandler';
-import { storage } from 'fm3/storage';
 import { createReduxStore } from 'fm3/storeCreator';
 import 'fm3/styles/index.scss';
 import 'fullscreen-api-polyfill';
+import storage from 'local-storage-fallback';
 import { render } from 'react-dom';
 import { IconContext } from 'react-icons/lib';
 import { Provider } from 'react-redux';
-import { assertType, setDefaultGetErrorObject } from 'typescript-is';
+import { setDefaultGetErrorObject } from 'typescript-is';
 import { authCheckLogin, authInit } from './actions/authActions';
+import { l10nSetChosenLanguage } from './actions/l10nActions';
+import { toastsAdd } from './actions/toastsActions';
 import { MessagesProvider } from './components/TranslationProvider';
-import { AppState } from './types/common';
+
+if (process.env['GA_MEASUREMENT_ID']) {
+  window.gtag('config', process.env['GA_MEASUREMENT_ID']);
+}
 
 setDefaultGetErrorObject(() => null);
 
@@ -35,15 +38,13 @@ if (window.location.search === '?reset-local-storage') {
   storage.clear();
 }
 
-document.body.classList.add(window.self === window.top ? 'full' : 'embedded');
+document.body.classList.add(window.fmEmbedded ? 'embedded' : 'full');
 
 const store = createReduxStore();
 
 setErrorHandlerStore(store);
 
-if (window.self === window.top) {
-  loadAppState();
-}
+store.dispatch(l10nSetChosenLanguage(store.getState().l10n.chosenLanguage));
 
 store.dispatch(authInit());
 
@@ -68,6 +69,28 @@ window.addEventListener('resize', setVh);
 
 setVh();
 
+const cookieConsentResult = store.getState().main.cookieConsentResult;
+
+if (window.fmEmbedded) {
+  // nothing for ebed
+} else if (cookieConsentResult !== null) {
+  store.dispatch(applyCookieConsent());
+} else {
+  store.dispatch(
+    toastsAdd({
+      messageKey: 'main.cookieConsent',
+      style: 'warning',
+      actions: [
+        {
+          nameKey: 'general.ok',
+          action: applyCookieConsent(),
+          style: 'secondary',
+        },
+      ],
+    }),
+  );
+}
+
 render(
   <Provider store={store}>
     <IconContext.Provider
@@ -87,36 +110,6 @@ render(
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
-}
-
-function loadAppState() {
-  let appState: AppState | undefined;
-
-  const as = storage.getItem('appState');
-
-  if (as) {
-    try {
-      appState = assertType<AppState>(JSON.parse(as));
-
-      // let's reset map to outdoor
-      if (!appState.version && appState.map) {
-        appState.map.mapType = 'X';
-      }
-    } catch (e) {
-      storage.removeItem('appState');
-      throw e;
-    }
-  }
-
-  if (appState) {
-    store.dispatch(setAppState(appState));
-  }
-
-  store.dispatch(
-    l10nSetChosenLanguage(
-      appState?.language?.replace(/-.*/, '') ?? null, // fixing wrong saved language because of bug in older version
-    ),
-  );
 }
 
 window.addEventListener('message', (e: MessageEvent) => {

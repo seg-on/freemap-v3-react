@@ -1,4 +1,5 @@
 import { setActiveModal } from 'fm3/actions/mainActions';
+import { tipsShow } from 'fm3/actions/tipsActions';
 import { useMessages } from 'fm3/l10nInjector';
 import { ReactElement, useCallback } from 'react';
 import Button from 'react-bootstrap/Button';
@@ -21,7 +22,8 @@ export function SupportUsModal({ show }: Props): ReactElement {
     <Modal show={show} onHide={close}>
       <Modal.Header closeButton>
         <Modal.Title>
-          <FaHeart color="red" /> {m?.more.supportUs} <FaHeart color="red" />
+          <FaHeart color="red" /> {m?.mainMenu.supportUs}{' '}
+          <FaHeart color="red" />
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -32,6 +34,14 @@ export function SupportUsModal({ show }: Props): ReactElement {
           <br />
           IBAN: SK33 0200 0000 0027 4638 9453
         </p>
+        <div>
+          <img
+            className="d-block mx-auto w-50 mt-2"
+            src="/pay_by_square.png"
+            alt=""
+          />
+        </div>
+        <hr />
         <form
           action="https://www.paypal.com/cgi-bin/webscr"
           method="post"
@@ -39,22 +49,27 @@ export function SupportUsModal({ show }: Props): ReactElement {
         >
           <input name="cmd" value="_s-xclick" type="hidden" />
           <input name="hosted_button_id" value="DB6Y3ZAB2XCPN" type="hidden" />
-          <Button type="submit">
+          <Button className="d-block mx-auto" type="submit">
             <FaPaypal /> {m?.supportUs.paypal}
           </Button>
         </form>
-        <br />
-        <p>{m?.supportUs.thanks}</p>
         <hr />
-        <p>2% z dane</p>
         <p>
-          Podporiť prevádzku Freemapu môžete aj Vašimi 2% z dane. Bližšie
-          informácie a tlačivá potrebné k poukázaniu 2% z dane nájdete na{' '}
-          <a href="https://github.com/FreemapSlovakia/freemap-operations/wiki/2%25-z-dan%C3%AD-pre-OZ-Freemap-Slovakia">
-            tejto stránke
+          Podporiť prevádzku Freemapu môžete aj Vašimi{' '}
+          <a
+            href="https://github.com/FreemapSlovakia/freemap-operations/wiki/2%25-z-dan%C3%AD-pre-OZ-Freemap-Slovakia"
+            onClick={(e) => {
+              e.preventDefault();
+
+              dispatch(tipsShow('dvePercenta'));
+            }}
+          >
+            2% z dane
           </a>
           .
         </p>
+        <hr />
+        <p>{m?.supportUs.thanks}</p>
         <hr />
         <address>
           Občianske združenie

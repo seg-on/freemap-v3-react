@@ -12,7 +12,7 @@ import {
   trackViewerUploadTrack,
 } from 'fm3/actions/trackViewerActions';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
+import { trackGeojsonIsSuitableForElevationChart } from 'fm3/selectors/mainSelectors';
 import 'fm3/styles/trackViewer.scss';
 import { ReactElement, useCallback } from 'react';
 import Button from 'react-bootstrap/Button';
@@ -35,27 +35,32 @@ export function TrackViewerMenu(): ReactElement {
 
   const dispatch = useDispatch();
 
-  const hasTrack = useSelector(
-    (state: RootState) => !!state.trackViewer.trackGeojson,
-  );
+  const hasTrack = useSelector((state) => !!state.trackViewer.trackGeojson);
+
+  const canUpload = useSelector((state) => !state.trackViewer.trackUID);
 
   const elevationChartActive = useSelector(
-    (state: RootState) => !!state.elevationChart.trackGeojson,
+    (state) => !!state.elevationChart.trackGeojson,
   );
 
   const colorizeTrackBy = useSelector(
-    (state: RootState) => state.trackViewer.colorizeTrackBy,
+    (state) => state.trackViewer.colorizeTrackBy,
   );
 
-  const trackGeojsonIsSuitableForElevationChart = useSelector(
-    (state: RootState) => isSuitableForElevationChart(state),
+  const enableElevationChart = useSelector(
+    trackGeojsonIsSuitableForElevationChart,
   );
 
   const handleConvertToDrawing = useCallback(() => {
     const tolerance = window.prompt(m?.general.simplifyPrompt, '50');
 
     if (tolerance !== null) {
-      dispatch(convertToDrawing(Number(tolerance)));
+      dispatch(
+        convertToDrawing({
+          type: 'track',
+          tolerance: Number(tolerance || '0') / 100000,
+        }),
+      );
     }
   }, [dispatch, m]);
 
@@ -71,7 +76,7 @@ export function TrackViewerMenu(): ReactElement {
         <FaUpload />
         <span className="d-none d-sm-inline"> {m?.trackViewer.upload}</span>
       </Button>
-      {trackGeojsonIsSuitableForElevationChart && (
+      {enableElevationChart && (
         <Button
           className="ml-1"
           variant="secondary"
@@ -87,7 +92,7 @@ export function TrackViewerMenu(): ReactElement {
           </span>
         </Button>
       )}
-      {trackGeojsonIsSuitableForElevationChart && (
+      {enableElevationChart && (
         <Dropdown
           className="ml-1"
           onSelect={(approach) => {
@@ -119,7 +124,7 @@ export function TrackViewerMenu(): ReactElement {
           </Dropdown.Menu>
         </Dropdown>
       )}
-      {trackGeojsonIsSuitableForElevationChart && (
+      {enableElevationChart && (
         <Button
           className="ml-1"
           variant="secondary"
@@ -138,7 +143,7 @@ export function TrackViewerMenu(): ReactElement {
           <span className="d-none d-sm-inline"> {m?.trackViewer.moreInfo}</span>
         </Button>
       )}
-      {hasTrack && (
+      {canUpload && (
         <Button
           className="ml-1"
           variant="secondary"
@@ -167,16 +172,4 @@ export function TrackViewerMenu(): ReactElement {
       {hasTrack && <DeleteButton />}
     </>
   );
-}
-
-function isSuitableForElevationChart(state: RootState) {
-  const { trackGeojson } = state.trackViewer;
-  if (trackGeojson && trackGeojson.features) {
-    const firstGeojsonFeature = trackGeojson.features[0];
-    return (
-      firstGeojsonFeature && firstGeojsonFeature.geometry.type === 'LineString'
-    );
-  }
-
-  return false;
 }

@@ -5,25 +5,29 @@ import {
   LineString,
   point,
   Point,
+  Polygon,
 } from '@turf/helpers';
+import { clearMap } from 'fm3/actions/mainActions';
 import { osmLoadRelation } from 'fm3/actions/osmActions';
-import { trackViewerSetData } from 'fm3/actions/trackViewerActions';
+import { searchSelectResult } from 'fm3/actions/searchActions';
 import { httpRequest } from 'fm3/authAxios';
+import { mergeLines } from 'fm3/geoutils';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
 import { OsmNode, OsmRelation, OsmResult, OsmWay } from 'fm3/types/common';
 import { assertType } from 'typescript-is';
 
-export const osmLoadRelationProcessor: Processor = {
+export const osmLoadRelationProcessor: Processor<typeof osmLoadRelation> = {
   actionCreator: osmLoadRelation,
   errorKey: 'osm.fetchingError',
-  handle: async ({ dispatch, getState }) => {
+  handle: async ({ dispatch, getState, action }) => {
+    const id = action.payload;
+
     const { data } = await httpRequest({
       getState,
       method: 'GET',
-      url: `//api.openstreetmap.org/api/0.6/relation/${
-        getState().trackViewer.osmRelationId
-      }/full`,
+      url: `//api.openstreetmap.org/api/0.6/relation/${id}/full`,
       expectedStatus: 200,
+      cancelActions: [clearMap, searchSelectResult],
     });
 
     const nodes: Record<number, OsmNode> = {};
@@ -42,57 +46,64 @@ export const osmLoadRelationProcessor: Processor = {
       (el) => el.type === 'relation',
     ) as OsmRelation[];
 
-    const features: Feature<Point | LineString>[] = [];
+    const features: Feature<Point | LineString | Polygon>[] = [];
 
-    for (const relation of relations) {
-      for (const member of relation.members) {
-        const { ref, type } = member;
+    const polyFeatures: Feature<Point | LineString | Polygon>[] = [];
 
-        switch (type) {
-          case 'node':
-            const n = nodes[ref];
+    const relation = relations.find((relation) => relation.id === id);
 
-            if (n) {
-              const props: Record<string, string> = {};
+    if (!relation) {
+      return;
+    }
 
-              if (n.tags?.['name']) {
-                props['name'] = n.tags['name'];
-              }
+    const tags: Record<string, string> = relation.tags ?? {};
 
-              if (n.tags?.['ele']) {
-                props['ele'] = n.tags['ele'];
-              }
+    for (const member of relation.members) {
+      const { ref, type } = member;
 
-              features.push(point([n.lon, n.lat], props));
-            }
-            break;
-          case 'way':
-            const w = ways[ref];
+      switch (type) {
+        case 'node':
+          const n = nodes[ref];
 
-            if (w) {
-              features.push(
-                lineString(
-                  w.nodes.map((ref) => [nodes[ref].lon, nodes[ref].lat]),
-                  // no street names pls // w.tags?.name ? { name: w.tags.name } : {},
-                ),
-              );
-            }
-            break;
-          case 'relation':
-          // TODO add support for relations in relation
-          default:
-            break;
-        }
+          if (n) {
+            features.push(point([n.lon, n.lat], n.tags));
+          }
+
+          break;
+        case 'way':
+          const w = ways[ref];
+
+          if (w) {
+            (member.role === 'inner' || member.role === 'outer'
+              ? polyFeatures
+              : features
+            ).push(
+              lineString(
+                w.nodes.map((ref) => [nodes[ref].lon, nodes[ref].lat]),
+                member.role === 'outer' ? tags : w.tags,
+              ),
+            );
+          }
+
+          break;
+        case 'relation':
+        // TODO add support for relations in relation
+        default:
+          break;
       }
     }
 
-    const trackGeojson = featureCollection(features);
+    mergeLines<LineString | Point | Polygon>(polyFeatures, tags);
 
     dispatch(
-      trackViewerSetData({
-        trackGeojson,
-        startPoints: [],
-        finishPoints: [],
+      searchSelectResult({
+        result: {
+          osmType: 'relation',
+          id,
+          geojson: featureCollection([...polyFeatures, ...features]),
+          tags,
+          detailed: true,
+        },
       }),
     );
   },

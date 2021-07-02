@@ -1,6 +1,11 @@
 import { baseLayers, overlayLayers } from 'fm3/mapDefinitions';
+import {
+  drawingLineJoinStart,
+  drawingLineStopDrawing,
+} from './actions/drawingLineActions';
 import { elevationChartClose } from './actions/elevationChartActions';
 import {
+  galleryCancelShowOnTheMap,
   galleryClear,
   galleryEditPicture,
   galleryHideFilter,
@@ -31,8 +36,6 @@ let keyTimer: number | null = null;
 
 let initCode: 'KeyE' | 'KeyG' | 'KeyP' | 'KeyJ' | null = null;
 
-const embed = window.self !== window.top;
-
 export function attachKeyboardHandler(store: MyStore): void {
   document.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.ctrlKey || event.altKey || event.metaKey || event.isComposing) {
@@ -41,68 +44,51 @@ export function attachKeyboardHandler(store: MyStore): void {
 
     const state = store.getState();
 
+    const suspendedModal =
+      state.main.selectingHomeLocation ||
+      state.gallery.pickingPositionForId ||
+      state.gallery.showPosition;
+
     const showingModal =
-      !state.gallery.showPosition &&
-      !state.gallery.pickingPositionForId &&
-      !state.main.selectingHomeLocation &&
-      (state.gallery.showFilter ||
-        !!state.main.activeModal ||
-        state.gallery.showUploadModal ||
-        state.gallery.activeImageId);
+      state.gallery.showFilter ||
+      !!state.main.activeModal ||
+      state.gallery.showUploadModal ||
+      state.gallery.activeImageId;
+    //  ||
+    // state.main.selectingHomeLocation ||
+    // state.gallery.pickingPositionForId ||
+    // state.gallery.showPosition;
 
-    if (state.gallery.showFilter && event.code === 'Escape') {
-      store.dispatch(galleryHideFilter());
-      return;
-    }
-
-    if (state.gallery.showUploadModal && event.code === 'Escape') {
-      store.dispatch(galleryHideUploadModal());
-      return;
-    }
-
-    if (showGalleryViewerSelector(state) && event.code === 'Escape') {
-      if (state.gallery.editModel) {
-        store.dispatch(galleryEditPicture());
-      } else {
-        store.dispatch(galleryClear());
-      }
-
-      event.preventDefault();
-
-      return;
-    }
-
-    if (
-      event.code === 'Escape' &&
-      state.elevationChart.elevationProfilePoints
-    ) {
-      store.dispatch(elevationChartClose());
-
-      return;
-    }
-
-    if (
-      event.code === 'Escape' &&
-      !embed &&
-      !document.body.classList.contains('fm-overlay-backdrop-enable')
-    ) {
-      if (state.main.selectingHomeLocation) {
-        store.dispatch(setSelectingHomeLocation(false));
-
-        event.preventDefault();
-
-        return;
+    if (event.code === 'Escape') {
+      if (
+        document.querySelector('*[data-popper-reference-hidden=false]') !== null
+      ) {
+        // nothing
+      } else if (state.gallery.showFilter) {
+        store.dispatch(galleryHideFilter());
       } else if (state.gallery.pickingPositionForId) {
         store.dispatch(gallerySetItemForPositionPicking(null));
+      } else if (state.gallery.showUploadModal) {
+        store.dispatch(galleryHideUploadModal());
+      } else if (showGalleryViewerSelector(state)) {
+        if (state.gallery.editModel) {
+          store.dispatch(galleryEditPicture());
+        } else {
+          store.dispatch(galleryClear());
+        }
 
         event.preventDefault();
-
-        return;
-      } else if (
-        !showingModal &&
-        !state.gallery.showPosition &&
-        state.main.selection
-      ) {
+      } else if (state.elevationChart.elevationProfilePoints) {
+        store.dispatch(elevationChartClose());
+      } else if (state.drawingLines.joinWith) {
+        store.dispatch(drawingLineJoinStart(undefined));
+      } else if (state.drawingLines.drawing) {
+        store.dispatch(drawingLineStopDrawing());
+      } else if (state.main.selectingHomeLocation) {
+        store.dispatch(setSelectingHomeLocation(false));
+      } else if (state.gallery.showPosition) {
+        store.dispatch(galleryCancelShowOnTheMap());
+      } else if (!showingModal && !suspendedModal && state.main.selection) {
         // store.dispatch(
         //   selectFeature(
         //     state.main.selection.type === 'tracking' ||
@@ -115,15 +101,13 @@ export function attachKeyboardHandler(store: MyStore): void {
         store.dispatch(selectFeature(null));
 
         event.preventDefault();
-
-        return;
-      } else if (state.main.tool) {
+      } else if (!showingModal && !suspendedModal && state.main.tool) {
         store.dispatch(setTool(null));
 
         event.preventDefault();
-
-        return;
       }
+
+      return;
     }
 
     if (
@@ -163,7 +147,10 @@ export function attachKeyboardHandler(store: MyStore): void {
       }
     }
 
-    if (state.main.activeModal === 'tips') {
+    if (
+      state.main.activeModal === 'tips' &&
+      state.tips.tip !== 'privacyPolicy'
+    ) {
       if (event.code === 'ArrowLeft') {
         store.dispatch(tipsShow('prev'));
         event.preventDefault();
@@ -177,8 +164,8 @@ export function attachKeyboardHandler(store: MyStore): void {
 
     if (
       !keyTimer &&
-      !showingModal &&
-      (!embed || !state.main.embedFeatures.includes('noMapSwitch'))
+      (!showingModal || suspendedModal) &&
+      (!window.fmEmbedded || !state.main.embedFeatures.includes('noMapSwitch'))
     ) {
       const baseLayer = baseLayers.find(
         (l) => l.key && l.key[0] === event.code && l.key[1] === event.shiftKey,
@@ -190,7 +177,9 @@ export function attachKeyboardHandler(store: MyStore): void {
         (!baseLayer.showOnlyInExpertMode || store.getState().main.expertMode)
       ) {
         store.dispatch(mapRefocus({ mapType: baseLayer.type }));
+
         event.preventDefault();
+
         return;
       }
 
@@ -204,38 +193,40 @@ export function attachKeyboardHandler(store: MyStore): void {
         (!overlayLayer.showOnlyInExpertMode || store.getState().main.expertMode)
       ) {
         const { type } = overlayLayer;
+
         const next = new Set(state.map.overlays);
+
         if (next.has(type)) {
           next.delete(type);
         } else {
           next.add(type);
         }
+
         store.dispatch(mapRefocus({ overlays: [...next] }));
+
         event.preventDefault();
+
         return;
       }
     }
 
     if (
+      event.code === 'Delete' &&
+      state.drawingLines.joinWith === undefined &&
       !keyTimer &&
       !showingModal &&
-      !state.gallery.showPosition &&
-      !state.gallery.pickingPositionForId &&
-      !state.main.selectingHomeLocation
+      !suspendedModal &&
+      (state.main.selection?.type !== 'line-point' ||
+        state.drawingLines.lines[state.main.selection.lineIndex].points.length >
+          (state.drawingLines.lines[state.main.selection.lineIndex].type ===
+          'line'
+            ? 2
+            : 3))
     ) {
-      if (event.code === 'Delete') {
-        store.dispatch(deleteFeature());
-      }
+      store.dispatch(deleteFeature());
     }
 
-    if (
-      state.main.activeModal ||
-      state.gallery.showUploadModal ||
-      state.main.selectingHomeLocation ||
-      state.gallery.activeImageId ||
-      state.gallery.showPosition ||
-      state.gallery.pickingPositionForId
-    ) {
+    if (showingModal || suspendedModal) {
       if (keyTimer) {
         window.clearTimeout(keyTimer);
 
@@ -243,7 +234,7 @@ export function attachKeyboardHandler(store: MyStore): void {
         initCode = null;
       }
     } else if (
-      !embed &&
+      !window.fmEmbedded &&
       !keyTimer &&
       (event.code === 'KeyG' ||
         event.code === 'KeyE' ||
@@ -260,6 +251,12 @@ export function attachKeyboardHandler(store: MyStore): void {
       if (initCode === 'KeyG') {
         if (event.code === 'KeyC') {
           store.dispatch(clearMap());
+          event.preventDefault();
+          return;
+        }
+
+        if (event.code === 'KeyM') {
+          store.dispatch(setActiveModal('maps'));
           event.preventDefault();
           return;
         }
@@ -303,6 +300,12 @@ export function attachKeyboardHandler(store: MyStore): void {
           return;
         } else if (event.code === 'KeyZ') {
           store.dispatch(openInExternalApp({ where: 'zbgis' }));
+          return;
+        } else if (event.code === 'KeyP') {
+          store.dispatch(openInExternalApp({ where: 'peakfinder' }));
+          return;
+        } else if (event.code === 'KeyL') {
+          store.dispatch(openInExternalApp({ where: 'mapillary' }));
           return;
         }
       } else if (initCode === 'KeyP') {

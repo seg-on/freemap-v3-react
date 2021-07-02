@@ -1,38 +1,39 @@
 import { RootAction } from 'fm3/actions';
 import { authSetUser } from 'fm3/actions/authActions';
-import { tipsPreventNextTime, tipsShow } from 'fm3/actions/tipsActions';
-import { tips } from 'fm3/tips';
+import { getTip, tipsPreventNextTime, tipsShow } from 'fm3/actions/tipsActions';
+import { TipKey } from 'fm3/tips';
 import { createReducer } from 'typesafe-actions';
 
 export interface TipsState {
-  tip: string | null;
+  tip: TipKey | null;
+  lastTip: TipKey | null;
   preventTips: boolean;
 }
 
-const initialState: TipsState = {
+export const tipsInitialState: TipsState = {
   tip: null,
+  lastTip: null,
   preventTips: false,
 };
 
-export const tipsReducer = createReducer<TipsState, RootAction>(initialState)
-  .handleAction(tipsShow, (state, action) => ({
-    ...state,
-    tip:
-      action.payload === null
-        ? null
-        : action.payload === 'next'
-        ? tips[(ft(state.tip) + 1) % tips.length][0]
-        : action.payload === 'prev'
-        ? tips[(ft(state.tip) + tips.length - 1) % tips.length][0]
-        : action.payload,
-  }))
-  // .handleAction(tipsPrevious, state => ({
-  //   ...state,
-  //   tip: tips[(ft(state.tip) + tips.length - 1) % tips.length][0],
-  // }))
+export const tipsReducer = createReducer<TipsState, RootAction>(
+  tipsInitialState,
+)
+  .handleAction(tipsShow, (state, action) => {
+    const next = {
+      ...state,
+      tip: action.payload === null ? null : getTip(state.tip, action.payload),
+    };
+
+    if (next.tip) {
+      next.lastTip = next.tip;
+    }
+
+    return next;
+  })
   .handleAction(tipsPreventNextTime, (state, action) => ({
     ...state,
-    preventTips: action.payload,
+    preventTips: action.payload.value,
   }))
   .handleAction(authSetUser, (state, action) => {
     const user = action.payload;
@@ -46,7 +47,3 @@ export const tipsReducer = createReducer<TipsState, RootAction>(initialState)
         }
       : state;
   });
-
-function ft(tip: string | null) {
-  return tips.findIndex(([key]) => key === tip);
-}

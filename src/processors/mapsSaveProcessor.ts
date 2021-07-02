@@ -1,19 +1,43 @@
-import { MapData, mapsSave } from 'fm3/actions/mapsActions';
+import {
+  MapData,
+  mapsLoad,
+  mapsLoadList,
+  mapsSave,
+} from 'fm3/actions/mapsActions';
 import { toastsAdd } from 'fm3/actions/toastsActions';
 import { httpRequest } from 'fm3/authAxios';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
-import { RootState } from 'fm3/storeCreator';
+import { DefaultRootState } from 'react-redux';
+import { assertType } from 'typescript-is';
+import { handleTrackUpload } from './trackViewerUploadTrackProcessor';
 
 export const mapsSaveProcessor: Processor<typeof mapsSave> = {
   actionCreator: mapsSave,
   errorKey: 'maps.saveError',
-  handle: async ({ getState, dispatch }) => {
-    await httpRequest({
+  async handle({ getState, dispatch, action }) {
+    if (getState().trackViewer.trackGpx && !getState().trackViewer.trackUID) {
+      await handleTrackUpload({
+        dispatch,
+        getState,
+      });
+
+      dispatch(action);
+
+      return;
+    }
+
+    const { id } = getState().maps;
+
+    const { data } = await httpRequest({
       getState,
-      method: 'PATCH',
-      url: `/maps/${getState().maps.id}`,
-      expectedStatus: 204,
-      data: { data: getMapDataFromState(getState()) },
+      method: id ? 'PATCH' : 'POST',
+      url: `/maps/${id ?? ''}`,
+      expectedStatus: [200, 204],
+      data: {
+        name: action.payload?.name,
+        data: getMapDataFromState(getState()),
+        public: true, // TODO
+      },
     });
 
     dispatch(
@@ -23,10 +47,16 @@ export const mapsSaveProcessor: Processor<typeof mapsSave> = {
         messageKey: 'general.saved',
       }),
     );
+
+    dispatch(mapsLoadList());
+
+    if (!id) {
+      dispatch(mapsLoad({ id: assertType<{ id: string }>(data).id })); // TODO skip loading in this case
+    }
   },
 };
 
-export function getMapDataFromState(state: RootState): MapData {
+function getMapDataFromState(state: DefaultRootState): MapData {
   const {
     tracking,
     drawingLines,

@@ -1,25 +1,17 @@
 import { authInit, authSetUser } from 'fm3/actions/authActions';
-import { setActiveModal } from 'fm3/actions/mainActions';
-import { tipsPreventNextTime, tipsShow } from 'fm3/actions/tipsActions';
+import { getTip, tipsShow } from 'fm3/actions/tipsActions';
 import { httpRequest } from 'fm3/authAxios';
 import { history } from 'fm3/historyHolder';
 import { Processor } from 'fm3/middlewares/processorMiddleware';
-import { storage } from 'fm3/storage';
+import { TipKey } from 'fm3/tips';
 import { User } from 'fm3/types/common';
-import { assertType } from 'typescript-is';
+import { assertType, is } from 'typescript-is';
+import { getEffectiveChosenLanguage } from './l10nSetLanguageProcessor';
 
 export const authInitProcessor: Processor = {
   actionCreator: authInit,
   errorKey: 'logIn.verifyError',
-  handle: async ({ getState, dispatch }) => {
-    try {
-      const user = JSON.parse(storage.getItem('user') ?? '');
-
-      dispatch(authSetUser({ ...user, notValidated: true }));
-    } catch (e) {
-      // ignore JSON parsing error
-    }
-
+  async handle({ getState, dispatch }) {
     const { user } = getState().auth;
 
     if (user) {
@@ -38,25 +30,22 @@ export const authInitProcessor: Processor = {
 
     // show tips only if not embedded and there are no other query parameters except 'map' or 'layers'
     if (
-      window.self === window.top &&
+      !window.fmEmbedded &&
       history.location.search
         .substring(1)
         .split('&')
         .every((x: string) => /^(map|layers)=|^$/.test(x))
     ) {
-      if (!getState().auth.user) {
-        dispatch(
-          tipsPreventNextTime(storage.getItem('preventTips') === 'true'),
-        );
-      }
+      const lang = getEffectiveChosenLanguage(getState().l10n.chosenLanguage);
 
-      if (
-        !getState().tips.preventTips &&
-        ['sk', 'cs'].includes(getState().l10n.language)
-      ) {
-        dispatch(tipsShow(storage.getItem('tip') || 'freemap'));
+      if (!getState().tips.preventTips && ['sk', 'cs'].includes(lang)) {
+        const tip = getState().tips.lastTip;
 
-        dispatch(setActiveModal('tips'));
+        setTimeout(() => {
+          dispatch(
+            tipsShow(tip && is<TipKey>(tip) ? getTip(tip, 'next') : 'freemap'),
+          );
+        });
       }
     }
   },

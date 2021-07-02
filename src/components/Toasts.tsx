@@ -7,7 +7,6 @@ import {
 } from 'fm3/actions/toastsActions';
 import { Toast } from 'fm3/components/Toast';
 import { getMessageByKey, useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import 'fm3/styles/toasts.scss';
 import { Messages } from 'fm3/translations/messagesInterface';
 import { ReactElement, ReactNode, useCallback, useMemo } from 'react';
@@ -16,19 +15,21 @@ import { useDispatch, useSelector } from 'react-redux';
 function tx(m: Messages | undefined, { name, nameKey }: ToastAction) {
   if (name !== undefined) {
     return name;
-  } else if (nameKey) {
+  }
+
+  if (nameKey) {
     const v = getMessageByKey(m, nameKey);
 
     if (typeof v === 'string') {
       return v;
-    } else if (v instanceof Function) {
+    }
+
+    if (v instanceof Function) {
       return v.call(undefined);
-    } else {
-      return '???';
     }
   }
 
-  return '???';
+  return '…';
 }
 
 export function Toasts(): ReactElement {
@@ -36,36 +37,47 @@ export function Toasts(): ReactElement {
 
   const dispatch = useDispatch();
 
-  const toasts = useSelector((state: RootState) => state.toasts.toasts);
+  const toasts = useSelector((state) => state.toasts.toasts);
 
   const items = useMemo(
     () =>
-      toasts.map(
-        ({ id, actions, style, message, messageKey, messageParams }) => {
-          let msg: ReactNode;
-
-          if (message !== undefined) {
-            msg = message;
-          } else if (messageKey) {
-            const v = getMessageByKey(m, messageKey);
-
-            if (typeof v === 'string') {
-              msg = v;
-            } else if (v instanceof Function) {
-              msg = v.call(undefined, messageParams);
-            } else {
-              msg = '???';
-            }
-          }
-
-          return {
+      toasts
+        .map(
+          ({
             id,
             actions,
             style,
-            msg,
-          };
-        },
-      ),
+            message,
+            messageKey,
+            messageParams,
+            noClose,
+          }) => {
+            let msg: ReactNode;
+
+            if (message !== undefined) {
+              msg = message;
+            } else if (messageKey) {
+              const v = getMessageByKey(m, messageKey);
+
+              if (typeof v === 'string') {
+                msg = v;
+              } else if (v instanceof Function) {
+                msg = v.call(undefined, messageParams);
+              } else {
+                msg = '…';
+              }
+            }
+
+            return {
+              id,
+              actions,
+              style,
+              msg,
+              noClose,
+            };
+          },
+        )
+        .reverse(),
     [m, toasts],
   );
 
@@ -87,13 +99,14 @@ export function Toasts(): ReactElement {
 
   return (
     <div className="fm-toasts">
-      {items.map(({ id, actions, style, msg }) => {
+      {items.map(({ id, actions, style, msg, noClose }) => {
         return (
           <Toast
             key={id}
             id={id}
             message={msg}
             style={style}
+            noClose={noClose}
             onAction={handleAction}
             actions={actions.map((action) => ({
               ...action,

@@ -4,7 +4,6 @@ import { DateTime } from 'fm3/components/DateTime';
 import { toDatetimeLocal } from 'fm3/dateUtils';
 import { useTextInputState } from 'fm3/hooks/inputHooks';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import { TrackedDevice } from 'fm3/types/trackingTypes';
 import { FormEvent, ReactElement, useState } from 'react';
 import Button from 'react-bootstrap/Button';
@@ -21,17 +20,17 @@ export function TrackedDeviceForm(): ReactElement {
 
   const dispatch = useDispatch();
 
-  const { device, forceNew } = useSelector((state: RootState) => {
+  const { device, forceNew } = useSelector((state) => {
     let device: TrackedDevice | undefined;
     let forceNew = false;
 
     if (state.tracking.modifiedTrackedDeviceId != null) {
       device = state.tracking.trackedDevices.find(
-        (device) => device.id === state.tracking.modifiedTrackedDeviceId,
+        (device) => device.token === state.tracking.modifiedTrackedDeviceId,
       );
 
       if (!device) {
-        device = { id: state.tracking.modifiedTrackedDeviceId };
+        device = { token: state.tracking.modifiedTrackedDeviceId };
         forceNew = true;
       }
     }
@@ -42,7 +41,7 @@ export function TrackedDeviceForm(): ReactElement {
     };
   }, shallowEqual);
 
-  const [id, setId] = useTextInputState(device?.id?.toString() ?? '');
+  const [id, setId] = useTextInputState(device?.token?.toString() ?? '');
 
   const [label, setLabel] = useTextInputState(device?.label ?? '');
 
@@ -73,13 +72,11 @@ export function TrackedDeviceForm(): ReactElement {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const id0 = id.trim();
-
-    const did = /^\d+$/.test(id0) ? Number.parseInt(id0) : id0;
+    const did = id.trim();
 
     dispatch(
       trackingActions.saveTrackedDevice({
-        id: did,
+        token: did,
         label: label.trim() || null,
         color: color === '#7239a8' ? null : color.trim() || null,
         fromTime: fromTime === '' ? null : new Date(fromTime),
@@ -102,9 +99,11 @@ export function TrackedDeviceForm(): ReactElement {
         <Modal.Title>
           <FaBullseye />{' '}
           {device && !forceNew
-            ? m?.tracking.trackedDevices.modifyTitle(device.label || device.id)
+            ? m?.tracking.trackedDevices.modifyTitle(
+                device.label || device.token,
+              )
             : m?.tracking.trackedDevices.createTitle(
-                device?.label ?? device?.id,
+                device?.label ?? device?.token,
               )}
         </Modal.Title>
       </Modal.Header>

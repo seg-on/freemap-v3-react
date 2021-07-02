@@ -4,8 +4,8 @@ import simplify from '@turf/simplify';
 import { RootAction } from 'fm3/actions';
 import {
   drawingLineAddPoint,
-  drawingLineRemovePoint,
-  drawingLineUpdatePoint,
+  drawingLineJoinFinish,
+  Line,
   Point,
 } from 'fm3/actions/drawingLineActions';
 import {
@@ -13,24 +13,28 @@ import {
   drawingPointAdd,
 } from 'fm3/actions/drawingPointActions';
 import { convertToDrawing, deleteFeature } from 'fm3/actions/mainActions';
-import { RootState } from 'fm3/storeCreator';
+import { mergeLines } from 'fm3/geoutils';
 import produce from 'immer';
+import { DefaultRootState } from 'react-redux';
 import { isActionOf } from 'typesafe-actions';
 import {
   cleanState as routePlannerCleanState,
-  initialState as routePlannerInitialState,
+  routePlannerInitialState as routePlannerInitialState,
 } from './routePlannerReducer';
+import { searchInitialState } from './searchReducer';
 import {
   cleanState as trackViewerCleanState,
-  initialState as trackViewerInitialState,
+  trackViewerInitialState as trackViewerInitialState,
 } from './trackViewerReducer';
 
 export function preGlobalReducer(
-  state: RootState,
+  state: DefaultRootState,
   action: RootAction,
-): RootState {
+): DefaultRootState {
   if (isActionOf(convertToDrawing, action)) {
-    if (state.main.tool === 'route-planner') {
+    const payload = action.payload;
+
+    if (payload.type === 'planned-route') {
       return produce(state, (draft) => {
         const alt =
           draft.routePlanner.alternatives[
@@ -47,11 +51,11 @@ export function preGlobalReducer(
 
         const ls = lineString(coords.map(([lat, lon]) => [lon, lat]));
 
-        if (action.payload !== undefined) {
+        if (payload.tolerance) {
           simplify(ls, {
             mutate: true,
             highQuality: true,
-            tolerance: action.payload / 100000,
+            tolerance: payload.tolerance,
           });
         }
 
@@ -71,12 +75,10 @@ export function preGlobalReducer(
 
         Object.assign(draft.routePlanner, routePlannerCleanState);
       });
-    } else if (state.main.selection?.type === 'objects') {
-      const { selection } = state.main;
-
+    } else if (payload.type === 'objects') {
       return produce(state, (draft) => {
         const object = draft.objects.objects.find(
-          (object) => object.id === selection.id,
+          (object) => object.id === payload.id,
         );
 
         if (object) {
@@ -89,7 +91,7 @@ export function preGlobalReducer(
           draft.drawingPoints.change++;
 
           draft.objects.objects = draft.objects.objects.filter(
-            (object) => object.id !== selection.id,
+            (object) => object.id !== payload.id,
           );
 
           draft.main.selection = {
@@ -98,25 +100,22 @@ export function preGlobalReducer(
           };
         }
       });
-    } else if (state.main.tool === 'track-viewer') {
+    } else if (payload.type === 'track') {
       return produce(state, (draft) => {
         if (!draft.trackViewer.trackGeojson) {
           return;
         }
 
-        const { features } = turfFlatten(
-          draft.trackViewer.trackGeojson as AllGeoJSON,
-        );
+        const { features } = turfFlatten(draft.trackViewer.trackGeojson);
 
         for (const feature of features) {
-          const { geometry } =
-            action.payload === undefined
-              ? feature
-              : simplify(feature, {
-                  mutate: false,
-                  highQuality: true,
-                  tolerance: action.payload / 100000,
-                });
+          const { geometry } = payload.tolerance
+            ? simplify(feature, {
+                mutate: false,
+                highQuality: true,
+                tolerance: payload.tolerance,
+              })
+            : feature;
 
           if (geometry?.type === 'Point') {
             draft.drawingPoints.points.push({
@@ -147,7 +146,97 @@ export function preGlobalReducer(
 
         Object.assign(draft.trackViewer, trackViewerCleanState);
       });
+    } else if (payload.type === 'search-result') {
+      return produce(state, (draft) => {
+        // TODO very similar to route conversion - use functions
+
+        if (!draft.search.selectedResult?.geojson) {
+          return;
+        }
+
+        const { features } = turfFlatten(
+          draft.search.selectedResult.geojson as AllGeoJSON,
+        );
+
+        const lines: Line[] = [];
+
+        mergeLines(features);
+
+        for (const feature of features) {
+          const { geometry } = feature;
+
+          if (geometry?.type === 'Point') {
+            draft.drawingPoints.points.push({
+              label: feature.properties?.['name'],
+              lat: geometry.coordinates[1],
+              lon: geometry.coordinates[0],
+            });
+          } else if (geometry?.type === 'LineString') {
+            let id = 0;
+
+            const points: Point[] = [];
+
+            for (const node of geometry.coordinates) {
+              points.push({
+                lat: node[1],
+                lon: node[0],
+                id: id++,
+              });
+            }
+
+            lines.push({
+              type: 'line',
+              // label: feature.properties?.['name'], // ignore street names
+              points,
+            });
+          } else if (geometry?.type === 'Polygon') {
+            let id = 0;
+
+            const points: Point[] = [];
+
+            // TODO add suport for inner rings
+
+            for (const node of geometry.coordinates[0]) {
+              points.push({
+                lat: node[1],
+                lon: node[0],
+                id: id++,
+              });
+            }
+
+            lines.push({
+              type: 'line',
+              label: feature.properties?.['name'],
+              points,
+            });
+          }
+        }
+
+        draft.drawingLines.lines.push(...lines);
+
+        draft.search = searchInitialState;
+      });
     }
+  } else if (
+    isActionOf(drawingLineJoinFinish, action) &&
+    state.drawingLines.joinWith
+  ) {
+    // this is to fix selection on join
+
+    return {
+      ...state,
+      main: {
+        ...state.main,
+        selection: {
+          type: 'draw-line-poly',
+          id:
+            state.drawingLines.joinWith.lineIndex -
+            (action.payload.lineIndex > state.drawingLines.joinWith.lineIndex
+              ? 0
+              : 1),
+        },
+      },
+    };
   } else if (isActionOf(deleteFeature, action)) {
     if (
       state.main.tool === 'track-viewer' ||
@@ -189,8 +278,19 @@ export function preGlobalReducer(
           mode: routePlanner.mode,
           milestones: routePlanner.milestones,
           pickMode: 'start',
+          preventHint: routePlanner.preventHint,
         },
       };
+    } else if (state.main.selection?.type === 'line-point') {
+      const { selection } = state.main;
+
+      return produce(state, (draft) => {
+        const line = draft.drawingLines.lines[selection.lineIndex];
+
+        line.points = line.points.filter(
+          (point) => point.id !== selection.pointId,
+        );
+      });
     } else if (state.main.selection?.type === 'draw-line-poly') {
       const {
         drawingLines,
@@ -228,7 +328,7 @@ export function preGlobalReducer(
         tracking: {
           ...tracking,
           trackedDevices: tracking.trackedDevices.filter(
-            (td) => td.id !== selection.id,
+            (td) => td.token !== selection.id,
           ),
         },
       };
@@ -239,9 +339,9 @@ export function preGlobalReducer(
 }
 
 export function postGlobalReducer(
-  state: RootState,
+  state: DefaultRootState,
   action: RootAction,
-): RootState {
+): DefaultRootState {
   if (isActionOf(drawingLineAddPoint, action)) {
     return produce(state, (draft) => {
       const index = action.payload.index ?? draft.drawingLines.lines.length - 1;
@@ -249,15 +349,6 @@ export function postGlobalReducer(
       draft.main.selection = {
         type: 'draw-line-poly',
         id: index,
-      };
-    });
-  } else if (
-    isActionOf([drawingLineUpdatePoint, drawingLineRemovePoint], action)
-  ) {
-    return produce(state, (draft) => {
-      draft.main.selection = {
-        type: 'draw-line-poly',
-        id: action.payload.index,
       };
     });
   } else if (isActionOf(drawingPointAdd, action)) {

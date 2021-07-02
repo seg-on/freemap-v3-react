@@ -25,6 +25,7 @@ export const changesetsProcessor: Processor = {
   errorKey: 'changesets.fetchError',
   handle: async ({ dispatch, getState }) => {
     const le = getMapLeafletElement();
+
     const state = getState();
 
     if (!le || state.changesets.days === null) {
@@ -114,9 +115,10 @@ export const changesetsProcessor: Processor = {
       dispatch(changesetsSet(allChangesetsSoFar));
 
       if (arrayOfrawChangesets.length === 100) {
-        const toTimeOfOldestChangeset = arrayOfrawChangesets[
-          arrayOfrawChangesets.length - 1
-        ].getAttribute('closed_at');
+        const toTimeOfOldestChangeset =
+          arrayOfrawChangesets[arrayOfrawChangesets.length - 1].getAttribute(
+            'closed_at',
+          );
 
         return loadChangesets(toTimeOfOldestChangeset, allChangesetsSoFar);
       }

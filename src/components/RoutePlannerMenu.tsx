@@ -16,7 +16,6 @@ import {
 import { toastsAdd } from 'fm3/actions/toastsActions';
 import { useScrollClasses } from 'fm3/hooks/scrollClassesHook';
 import { useMessages } from 'fm3/l10nInjector';
-import { RootState } from 'fm3/storeCreator';
 import { TransportType, transportTypeDefs } from 'fm3/transportTypeDefs';
 import { MouseEvent, ReactElement, useCallback, useMemo } from 'react';
 import Button from 'react-bootstrap/Button';
@@ -36,6 +35,7 @@ import {
   FaStop,
 } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
+import { is } from 'typescript-is';
 import { DeleteButton } from './DeleteButton';
 
 export function RoutePlannerMenu(): ReactElement {
@@ -43,41 +43,34 @@ export function RoutePlannerMenu(): ReactElement {
 
   const dispatch = useDispatch();
 
-  const milestones = useSelector(
-    (state: RootState) => state.routePlanner.milestones,
-  );
+  const milestones = useSelector((state) => state.routePlanner.milestones);
 
-  const homeLocation = useSelector(
-    (state: RootState) => state.main.homeLocation,
-  );
+  const homeLocation = useSelector((state) => state.main.homeLocation);
 
   const transportType = useSelector(
-    (state: RootState) => state.routePlanner.transportType,
+    (state) => state.routePlanner.transportType,
   );
 
-  const mode = useSelector((state: RootState) => state.routePlanner.mode);
+  const mode = useSelector((state) => state.routePlanner.mode);
 
-  const pickPointMode = useSelector(
-    (state: RootState) => state.routePlanner.pickMode,
-  );
+  const pickPointMode = useSelector((state) => state.routePlanner.pickMode);
 
   const routeFound = useSelector(
-    (state: RootState) => !!state.routePlanner.alternatives.length,
+    (state) => !!state.routePlanner.alternatives.length,
   );
 
   const elevationProfileIsVisible = useSelector(
-    (state: RootState) => !!state.elevationChart.trackGeojson,
+    (state) => !!state.elevationChart.trackGeojson,
   );
 
-  const expertMode = useSelector((state: RootState) => state.main.expertMode);
+  const expertMode = useSelector((state) => state.main.expertMode);
 
   const canSwap = useSelector(
-    (state: RootState) =>
-      !!(state.routePlanner.start && state.routePlanner.finish),
+    (state) => !!(state.routePlanner.start && state.routePlanner.finish),
   );
 
   const canDelete = useSelector(
-    (state: RootState) =>
+    (state) =>
       !!(
         state.routePlanner.start ||
         state.routePlanner.finish ||
@@ -121,7 +114,12 @@ export function RoutePlannerMenu(): ReactElement {
     const tolerance = window.prompt(m?.general.simplifyPrompt, '50');
 
     if (tolerance !== null) {
-      dispatch(convertToDrawing(Number(tolerance)));
+      dispatch(
+        convertToDrawing({
+          type: 'planned-route',
+          tolerance: Number(tolerance || '0') / 100000,
+        }),
+      );
     }
   }, [dispatch, m]);
 
@@ -133,9 +131,9 @@ export function RoutePlannerMenu(): ReactElement {
         className="ml-1"
         id="transport-type"
         onSelect={(transportType) => {
-          dispatch(
-            routePlannerSetTransportType(transportType as TransportType),
-          );
+          if (is<TransportType>(transportType)) {
+            dispatch(routePlannerSetTransportType(transportType));
+          }
         }}
       >
         <Dropdown.Toggle variant="secondary">
@@ -340,7 +338,7 @@ export function RoutePlannerMenu(): ReactElement {
         )}
       </ButtonGroup>
 
-      {!!routeFound && (
+      {routeFound && (
         <>
           <Button
             className="ml-1"

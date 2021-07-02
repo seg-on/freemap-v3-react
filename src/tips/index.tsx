@@ -4,7 +4,9 @@ import {
   FaCamera,
   FaCertificate,
   FaExternalLinkAlt,
+  FaLock,
   FaMapSigns,
+  FaPercent,
   FaRegKeyboard,
   FaRoad,
   FaShareAlt,
@@ -12,7 +14,27 @@ import {
 } from 'react-icons/fa';
 import { SiOpenstreetmap } from 'react-icons/si';
 
-export const tips = [
+export type TipKey =
+  | 'freemap'
+  | 'osm'
+  | 'attribution'
+  | 'shortcuts'
+  | 'exports'
+  | 'sharing'
+  | 'galleryUpload'
+  | 'gpxViewer'
+  | 'planner'
+  | 'dvePercenta'
+  | 'privacyPolicy';
+
+export type Tip = [
+  key: TipKey,
+  title: string,
+  icon: React.ReactElement,
+  hide?: boolean,
+];
+
+export const tips: Tip[] = [
   ['freemap', 'O združení Freemap', <FaUsers />],
   ['osm', 'O OpenStreetMap', <SiOpenstreetmap />],
   ['attribution', 'Licencia máp', <FaCertificate />],
@@ -22,4 +44,6 @@ export const tips = [
   ['galleryUpload', 'Galéria fotografií', <FaCamera />],
   ['gpxViewer', 'Prehliadač trás GPX', <FaRoad />],
   ['planner', 'Vyhľadávač trás', <FaMapSigns />],
-] as const;
+  ['dvePercenta', 'Dve percentá', <FaPercent />],
+  ['privacyPolicy', 'Privacy policy', <FaLock />, true],
+];
